@@ -34,15 +34,14 @@ come from `.env` (see `.env.example`).
 streamlit run app.py        # or: make app
 ```
 
-Five tabs, plus a **Settings** dialog (button at the top right).
+Four tabs, plus a **Settings** dialog (button at the top right).
 
 | Tab | What it shows |
 |---|---|
-| **Overview** | what it helps with, how, and what it will not do |
-| **Find promos** | choose screenplays (upload or folder) and episodes, **Run**, or **Try the demo**. Each promo is a card: segments, "checked by code" badges (length, hook timing recomputed from the data), hook / cliffhanger / why, judge scores, and **Why this pick?** (automatic fixes, what the cold viewer saw, judge model). Side panel: **Run** (funnel, errors, tokens), **Clip** (the exact transcript the judge saw), **Export** (CSV, JSON, report). **Open an earlier run** browses `outputs/`. |
-| **How it works** | the five steps (code vs AI), how invented timestamps are stopped, where data and keys live |
-| **Evaluation** | `docs/findings.md`: measured results and failures from the archived run |
-| **Status** | **Run self-test** (offline, stub model, no key or data) and a table of which configured models are reachable |
+| **Overview** | what it helps with, the headline results of the archived run, what to post first, what it will not do |
+| **Live demo** | a strip with **Run self-test** (offline, stub model) and **Check models** (is each configured model reachable); then choose screenplays (upload or folder) and episodes and press **Run**, or **Try the demo**. Each promo is a card: a timeline of where the clip sits in its episode, "checked by code" chips (length, hook timing recomputed from the data), hook / cliffhanger / why, judge score bars and final score, the clip transcript the judge saw, and **Why this pick?** (what the cold viewer saw, judge model). Below: run summary (funnel, errors, tokens) and downloads |
+| **How it works** | the five stages (code vs AI), how the final score is built, the guardrails, where data and keys live |
+| **Evaluation** | measured results as bars: AI vs the rules-only baseline, the re-run with the fixed validator, the second-model check, where it is weak; the full `docs/findings.md` is in an expander |
 
 **Settings:** use the models in `configs/config.yaml` or one model for every stage, a different judge model, your own API
 key (kept in this session's memory only, never written to disk), judge and baseline on/off, and **Test connection** (a

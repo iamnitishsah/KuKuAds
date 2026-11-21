@@ -1,10 +1,11 @@
-"""Reusable pieces: promo card, the code-checked badges, the side panel."""
+"""Reusable pieces: the promo card, run summary and downloads."""
 from __future__ import annotations
 
 import streamlit as st
 
 from ..pipeline.judge import clip_transcript
 from ..pipeline.models import Promo, Segment, fmt_ts
+from . import theme
 
 
 def segments_text(row: dict) -> str:
@@ -24,82 +25,84 @@ def code_checks(row: dict, episodes: dict | None, rules: dict | None = None) -> 
     return out
 
 
+def _promo(row: dict) -> Promo:
+    return Promo(row["promo_id"], row["source"], [Segment(**{k: s[k] for k in ("episode", "start", "end", "start_beat", "end_beat")})
+                                                  for s in row["segments"]])
+
+
 def promo_card(row: dict, episodes: dict | None, rules: dict | None, key: str) -> None:
     j = row.get("judge") or {}
+    sc = row.get("scores") or {}
+    ep = (episodes or {}).get(row["segments"][0]["episode"])
+    hook_beat = ep.beat(row.get("hook_beat", "")) if ep else None
     with st.container(border=True):
-        top = st.columns([5, 2])
-        top[0].markdown(f"### #{row['rank']} · {row['promo_id']}")
-        top[1].markdown(f"`{(row.get('finder_model') or '').split('/')[-1] or 'model'}`")
-        st.caption(f"{segments_text(row)} · {row['duration_s']:.0f} s")
-        badges = st.container(horizontal=True)
-        for text, ok in code_checks(row, episodes, rules):
-            badges.badge(text, icon=":material/check:" if ok else ":material/warning:", color="green" if ok else "orange")
+        model = (row.get("finder_model") or "").split("/")[-1]
+        theme.show(f'<div class="ph"><span class="rank">#{row["rank"]}</span><span class="pid">{theme.esc(row["promo_id"])}</span>'
+                   f'<span class="meta">{theme.esc(segments_text(row))} · {row["duration_s"]:.0f} s</span><span class="sp"></span>'
+                   f'{theme.chip(model, "gray") if model else ""}</div>')
+        theme.show(theme.timeline(row["segments"], hook_beat.start if hook_beat else None, ep.duration if ep else None))
+        chips = "".join(theme.chip(t, "green" if ok else "amber") for t, ok in code_checks(row, episodes, rules))
         if j and j.get("clarity", 5) <= 3:
-            badges.badge("low clarity for a stranger", icon=":material/help:", color="orange")
+            chips += theme.chip("low clarity for a stranger", "amber")
+        if row.get("status") == "unjudged":
+            chips += theme.chip("could not be judged", "red")
         if not row.get("in_top_list"):
-            badges.badge("held back: same episode as a higher pick", color="gray")
-        st.markdown(f"**Hook:** {row['hook']}  \n**Cliffhanger:** {row['cliffhanger']}  \n**Why it works:** {row['why']}")
-        if j:
-            c = st.columns(4)
-            c[0].metric("Hook", j.get("hook", "-"))
-            c[1].metric("Cliffhanger", j.get("cliffhanger", "-"))
-            c[2].metric("Clarity", j.get("clarity", "-"))
-            c[3].metric("Score", (row.get("scores") or {}).get("final", "-"))
-        a, b = st.columns([1, 3])
-        if a.button("Show clip", key=f"show-{key}"):
-            st.session_state["selected"] = row["promo_id"]
-        with b.expander("Why this pick?"):
-            st.markdown("**Steps**")
-            st.markdown("1. The finder proposed these beats; **code** turned them into timestamps.\n"
-                        + "\n".join(f"2. Automatic fix: {n}" for n in row.get("notes") or [])
-                        + ("\n" if row.get("notes") else "") + "3. A **different model** read only the clip as a stranger.")
+            chips += theme.chip("held back: same episode as a higher pick", "gray")
+        for n in row.get("notes") or []:
+            chips += theme.chip(f"auto-fix: {n}"[:90], "purple")
+        theme.show(chips)
+        left, right = st.columns([3, 2], gap="large")
+        with left:
+            theme.show(theme.quote("Hook", row["hook"]) + theme.quote("Cliffhanger", row["cliffhanger"], "cliff")
+                       + theme.quote("Why it works", row["why"], "why"))
+        with right:
             if j:
-                st.markdown(f"**Cold viewer saw:** {j.get('summary', '')}  \n**Confusing:** {j.get('confusing', '')}  \n"
+                bars = theme.score_bar("Hook", j.get("hook")) + theme.score_bar("Cliffhanger", j.get("cliffhanger")) + theme.score_bar("Clarity", j.get("clarity"))
+                theme.show(bars)
+                if sc.get("final") is not None:
+                    theme.show(f'<div class="final"><div class="v">{sc["final"]}</div><div class="l">final score</div></div>')
+            else:
+                st.caption("Not judged in this run.")
+        a, b = st.columns(2)
+        with a.expander("Read the clip the judge saw"):
+            if episodes:
+                theme.show(theme.transcript(clip_transcript(_promo(row), episodes)))
+            else:
+                st.caption("beats.json is not in this run, so the transcript cannot be rebuilt.")
+        with b.expander("Why this pick?"):
+            if j:
+                st.markdown(f"**A cold viewer saw:** {j.get('summary', '')}  \n**Confusing:** {j.get('confusing', '')}  \n"
                             f"**Wants next:** {j.get('want_next', '')}")
                 st.caption(f"Judge: {j.get('served_by') or j.get('model')} · repeats {j.get('repeats')} · spread {j.get('spread')}"
                            + (" · FALLBACK model used" if j.get("fallback") else ""))
-            sc = row.get("scores") or {}
             if sc:
                 st.caption(f"Score parts: hook {sc.get('hook')}, cliffhanger {sc.get('cliffhanger')}, clarity {sc.get('clarity')}, "
                            f"intensity {sc.get('intensity')}, early-episode bonus {sc.get('entry_bonus')}")
 
 
-def side_panel(run: dict) -> None:
-    rows, meta = run["rows"], run["meta"]
-    t_run, t_clip, t_export = st.tabs(["Run", "Clip", "Export"])
-    with t_run:
-        cands = run["candidates"]
-        valid = sum(c["status"] == "valid" for c in cands)
-        unjudged = sum(c["status"] == "unjudged" for c in cands)
-        st.markdown(f"**Funnel:** {len(cands)} proposed → {valid} valid, {len(cands) - valid - unjudged} rejected"
-                    + (f", **{unjudged} could not be judged**" if unjudged else ""))
-        if unjudged:
-            st.warning("Some promos could not be judged and are left out of the ranking. Run again to resume from the cache.")
-        for c in [c for c in cands if c["status"] == "rejected"][:5]:
-            st.caption(f"{c['promo_id']}: {'; '.join(c['notes'])}")
-        st.markdown(f"**Wall time:** {meta.get('wall_time_s', '-')} s · **errors:** {len(meta.get('errors') or [])}")
-        for e in (meta.get("errors") or [])[:3]:
-            st.error(e[:200])
-        calls = [c for c in run["calls"] if "error" not in c and not c.get("rate_limited")]
-        if calls:
-            st.caption(f"{len(calls)} model calls, {sum(c.get('input_tokens', 0) for c in calls):,} tokens in, "
-                       f"{sum(c.get('output_tokens', 0) for c in calls):,} out, "
-                       f"{sum(1 for c in calls if c.get('cached'))} from cache")
-    with t_clip:
-        pid = st.session_state.get("selected")
-        row = next((r for r in rows if r["promo_id"] == pid), None)
-        if not row:
-            st.info("Press **Show clip** on a promo to read exactly what the judge saw.")
-        elif not run["episodes"]:
-            st.warning("beats.json is not in this run, so the clip transcript cannot be rebuilt.")
-        else:
-            promo = Promo(row["promo_id"], row["source"], [Segment(**{k: s[k] for k in ("episode", "start", "end", "start_beat", "end_beat")})
-                                                           for s in row["segments"]])
-            st.markdown(f"**{row['promo_id']}** · {segments_text(row)}")
-            st.code(clip_transcript(promo, run["episodes"]), language=None)
-    with t_export:
-        for name in ("promos_ranked.csv", "promos_ranked.json", "report.md", "candidates.json"):
-            f = run["dir"] / name
-            if f.exists():
-                st.download_button(f"Download {name}", f.read_bytes(), file_name=name, key=f"dl-{name}")
-        st.caption(f"Saved in `{run['dir']}`")
+def run_summary(run: dict) -> None:
+    """Funnel, errors, call counts and downloads for one run."""
+    meta, cands = run["meta"], run["candidates"]
+    valid = sum(c["status"] == "valid" for c in cands)
+    unjudged = sum(c["status"] == "unjudged" for c in cands)
+    rejected = len(cands) - valid - unjudged
+    theme.show(theme.chip(f"{len(cands)} proposed", "gray") + theme.chip(f"{valid} valid", "green")
+               + theme.chip(f"{rejected} rejected", "amber" if rejected else "gray")
+               + (theme.chip(f"{unjudged} could not be judged", "red") if unjudged else ""))
+    if unjudged:
+        st.warning("Some promos could not be judged and are left out of the ranking. Run again to resume from the cache.")
+    for c in [c for c in cands if c["status"] == "rejected"][:5]:
+        st.caption(f"Rejected {c['promo_id']}: {'; '.join(c['notes'])}")
+    st.caption(f"Wall time {meta.get('wall_time_s', '-')} s · errors {len(meta.get('errors') or [])}")
+    for e in (meta.get("errors") or [])[:3]:
+        st.error(e[:200])
+    calls = [c for c in run["calls"] if "error" not in c and not c.get("rate_limited")]
+    if calls:
+        st.caption(f"{len(calls)} model calls · {sum(c.get('input_tokens', 0) for c in calls):,} tokens in · "
+                   f"{sum(c.get('output_tokens', 0) for c in calls):,} out · {sum(1 for c in calls if c.get('cached'))} from cache")
+    cols = st.columns(4)
+    for col, name in zip(cols, ("promos_ranked.csv", "promos_ranked.json", "report.md", "candidates.json")):
+        f = run["dir"] / name
+        if f.exists():
+            col.download_button(name, f.read_bytes(), file_name=name, key=f"dl-{name}", icon=":material/download:")
+    st.caption(f"Saved in `{run['dir']}`")

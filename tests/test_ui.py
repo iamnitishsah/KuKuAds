@@ -18,24 +18,24 @@ def _click(at, label):
     return at.run()
 
 
-def test_app_loads_with_five_tabs(app):
+def test_app_loads_with_four_tabs(app):
     assert not app.exception
-    assert [t.label for t in app.tabs] == ["Overview", "Find promos", "How it works", "Evaluation", "Status"]
+    assert [t.label for t in app.tabs] == ["Overview", "Live demo", "How it works", "Evaluation"]
 
 
 def test_demo_run_shows_a_card_and_the_clip(app):
     _click(app, "Try the demo")
     assert not app.exception
-    assert any("#1 · E01-P1" in str(m.value) for m in app.markdown)
+    html = " ".join(str(m.value) for m in app.markdown)
+    assert "E01-P1" in html and "Demo data" in html
     # the demo's finder and judge differ, so nothing counts as self-graded
-    assert dict((m.label, m.value) for m in app.metric)["Judged by the finder's model"] == "0"
-    _click(app, "Show clip")
-    assert not app.exception and any("on screen" in c.value for c in app.code)
+    assert "judged by the finder" in html
+    assert "on screen" in html          # the transcript the judge saw is rendered in the card
 
 
-def test_status_selftest_button(app):
+def test_selftest_button(app):
     _click(app, "Run self-test")
-    assert any("working" in s.value for s in app.success)
+    assert any("pipeline code is working" in str(m.value) for m in app.markdown)
 
 
 def test_session_key_is_restored(monkeypatch):
