@@ -32,7 +32,7 @@ OUTPUTS = ROOT / "outputs"
 STATIC = Path(__file__).resolve().parent / "static"
 load_dotenv(ROOT / ".env")
 
-app = FastAPI(title="Promo Finder", version="1.0")
+app = FastAPI(title="KuKuAds", version="1.0")
 JOBS: dict[str, dict] = {}
 _lock = threading.Lock()
 SAFE = re.compile(r"^[A-Za-z0-9._-]+$")

@@ -43,12 +43,12 @@ def main() -> None:
     )
     html = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
-<title>Detailed Working Report - Promo Finder</title>
+<title>Detailed Working Report - KuKuAds</title>
 <style>{CSS}</style></head>
 <body>
 <div class="cover">
 <h1>Detailed Working Report</h1>
-<div class="meta">Promo Finder (Problem 1) &middot; archived full run <code>outputs/full-run</code>
+<div class="meta">KuKuAds (Problem 1) &middot; archived full run <code>outputs/full-run</code>
 &middot; 50 episodes &middot; generated from the real artifacts</div>
 </div>
 {body}

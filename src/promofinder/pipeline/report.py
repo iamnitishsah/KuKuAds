@@ -86,7 +86,7 @@ def write_report(out: Path, episodes: list[Episode], promos: list[Promo], rows: 
     rejected = [p for p in promos if p.status == "rejected"]
     judged = [p for p in valid if p.judge]
     L: list[str] = []
-    L += [f"# Promo Finder report", "",
+    L += [f"# KuKuAds report", "",
           f"- Episodes: {len(episodes)} ({episodes[0].number}–{episodes[-1].number})" if episodes else "- Episodes: 0",
           f"- Finder model: `{meta['finder_chain'][0]['model']}` (fallbacks: {', '.join(m['model'] for m in meta['finder_chain'][1:]) or 'none'})",
           f"- Judge model: `{meta['judge_chain'][0]['model']}` (fallbacks: {', '.join(m['model'] for m in meta['judge_chain'][1:]) or 'none'})",

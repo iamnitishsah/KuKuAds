@@ -1,4 +1,4 @@
-"""Promo Finder CLI.
+"""KuKuAds CLI.
 
 Examples
   python run.py --scripts "path/to/show"                                  # full run, models from config.yaml

@@ -1,4 +1,4 @@
-# Promo Finder configuration.
+# KuKuAds configuration.
 # Swap models here, or override from the CLI:  python run.py ... --provider anthropic --model <model-id>
 
 providers:
