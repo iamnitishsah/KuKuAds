@@ -1,4 +1,4 @@
-# Detailed Working Report — Promo Finder (Problem 1)
+# Detailed Working Report — KuKuAds (Problem 1)
 
 **What this document is.** A layer-by-layer account of the pipeline that produced `outputs/full-run/`: what goes in, what comes out, the exact prompt used, and the real numbers from the 50-episode run. Every example below is copied from the archived artifacts, not reconstructed from memory. Where a claim in the summary does not survive checking, it is flagged in [§12](#12-verified-corrections-and-limits).
 

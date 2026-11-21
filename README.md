@@ -1,11 +1,11 @@
-# Promo Finder
+# KuKuAds
 
 Reads a microdrama's episode screenplays and finds the best **20–60 second promos** for TikTok, Instagram and
 YouTube Shorts: clips that open on a **hook** in the first 3 seconds, end on a **cliffhanger**, and **make sense
 to someone who has never seen the show**. For each promo it gives the episode, the start and end timestamps of
 every segment, the hook, the cliffhanger, one line on why it works, and a rank.
 
-Built for the Kuku AI Generalist assignment (Problem 1: Find the Promos).
+Built for the Kuku AI Generalist assignment (Problem 1: Find the Promos). The Python package is named `promofinder`.
 
 ## Contents
 1. [Quickstart](#quickstart)

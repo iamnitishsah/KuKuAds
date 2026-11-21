@@ -1,4 +1,4 @@
-# Promo Finder: Solution (Problem 1)
+# KuKuAds: Solution (Problem 1)
 
 **Prototype:** https://github.com/iamnitishsah/KuKuAds · **Raw outputs:** `outputs/full-run/` (shared via Drive link, not in the repo, because the input pack is confidential)
 
