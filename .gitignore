@@ -221,3 +221,16 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- Promo Finder ---
+# Kuku's screenplays are confidential: never commit them or anything that embeds their text.
+data/raw/
+# Run outputs embed screenplay text (beats, clip transcripts, quotes); the solution doc shares them separately.
+outputs/*
+!outputs/README.md
+.cache/
+.DS_Store
+.idea/
+.claude/
+.mcp.json
+*.egg-info/
