@@ -30,6 +30,10 @@ come from `.env` (see `.env.example`).
 
 ## Streamlit app
 
+Deployed on Streamlit Community Cloud: https://kukuads.streamlit.app/ (the **Try the demo** button needs no key and no data; a real run needs a key in **Settings** and your own screenplays, which are not on the server).
+
+Run it locally:
+
 ```bash
 streamlit run app.py        # or: make app
 ```

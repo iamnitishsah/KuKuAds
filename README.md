@@ -7,6 +7,8 @@ the cliffhanger, one line on why it works, and a rank.
 
 Built for the Kuku AI Generalist assignment, Problem 1 (Find the Promos).
 
+**Live app:** [https://kukuads.streamlit.app/](https://kukuads.streamlit.app/) (press **Try the demo** on the Live demo tab: no key, no data). Code: [github.com/iamnitishsah/KuKuAds](https://github.com/iamnitishsah/KuKuAds).
+
 **Result on the 50-episode show:** the archived run found 78 valid promos, at least one in 49 of 50 episodes; a re-run
 after the validator fixes found 72 and covers **50 of 50**. Every promo is 20–60 s with the hook inside 3 s, and the
 re-run has no cut inside a spoken line. The AI's real contribution is *where to cut*: it picked a better cliffhanger than
@@ -37,7 +39,7 @@ cp .env.example .env            # defaults need GROQ_API_KEY and GEMINI_API_KEY
 
 python run.py --selftest        # offline check that the code works (no key, no data)
 python -m pytest -q             # 33 tests
-streamlit run app.py            # the app (tabs: Overview, Live demo, How it works, Evaluation)
+streamlit run app.py            # the app, also deployed at kukuads.streamlit.app (tabs: Overview, Live demo, How it works, Evaluation)
 
 # command line, real run (screenplays go in data/raw/, which is gitignored)
 python run.py --scripts "data/raw/<show folder>" --episodes 1-3        # models from configs/config.yaml
