@@ -1,4 +1,56 @@
-# Dev log: mistakes made and how they were solved
+# Development
+
+How to set up, change and test KuKuAds. For what each stage does see [ARCHITECTURE.md](ARCHITECTURE.md); for the
+CLI and HTTP interface see [API.md](API.md).
+
+## Setup
+
+```bash
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env          # only the keys for the providers you use
+python -m pytest -q           # 15 tests; no network or API key needed
+```
+
+`run.py` adds `src/` to the path, so nothing needs installing. `pyproject.toml` also sets `pythonpath = ["src"]` for pytest.
+`make test`, `make run SCRIPTS=...` and `make serve` wrap the same commands.
+
+## Layout
+
+| Path | What |
+|---|---|
+| `src/promofinder/pipeline/` | `parse`, `find`, `prompts`, `validate`, `judge`, `rank`, `baseline`, `report`, `runner`, `models` |
+| `src/promofinder/llm/` | `LLMClient` (pin, fallback, cache, log) and the two provider adapters |
+| `src/promofinder/api/` | FastAPI app and static UI |
+| `configs/config.yaml` | providers, pinned models, promo rules, ranking weights |
+| `tests/` | parser, validator, ranker, LLM client |
+| `eval/` | one-off evaluation scripts and the long evidence reports |
+
+## Common changes
+
+- **Swap a model:** edit `stages` in `configs/config.yaml`, or pass `--provider/--model` (see [API.md](API.md)).
+- **Add a provider:** add an entry under `providers`; `openai_compatible` and `anthropic` are the only adapter types.
+- **Tune a prompt:** all prompts are in `pipeline/prompts.py`. Re-run with `--no-cache`, or the cache returns old replies.
+- **Change promo rules or ranking weights:** `promo` and `ranking` in `configs/config.yaml`; no code change needed.
+- **New show:** `python run.py --scripts <folder>`; the parser is forgiving about case, spacing and missing headers.
+
+## Rules that matter
+
+- **Never change the cache key casually** (`LLMClient._cache_key`). Add new fields only when set, so existing cache
+  entries stay valid (mistake #6 below).
+- **Never let a stage fall back silently.** Every call logs `served_by`; the report counts self-graded clips.
+- **Code owns timestamps.** The LLM returns beat IDs only; do not let a prompt change ask it for times.
+
+## Tests
+
+```bash
+python -m pytest -q
+python -m pytest tests/test_validate.py -q
+```
+
+Covered: parser, validator, ranker, LLM client. Not covered: `judge`, `baseline`, `find`, `report`, `runner`, `api`.
+
+## Mistakes log: what went wrong and how it was solved
 
 All real; evidence is in the git history and `outputs/` runs (kept as `full-run-v1…v3`).
 
