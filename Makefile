@@ -1,9 +1,11 @@
-.PHONY: install test run serve
+.PHONY: install test run app selftest
 install:
 	pip install -r requirements.txt
 test:
 	python -m pytest -q
+selftest:       ## offline check of the pipeline code, no LLM or key needed
+	python run.py --selftest
 run:            ## make run SCRIPTS="path/to/screenplays"
 	python run.py --scripts "$(SCRIPTS)"
-serve:
-	PYTHONPATH=src uvicorn promofinder.api.main:app --port 8000
+app:
+	streamlit run app.py
