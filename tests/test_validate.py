@@ -1,5 +1,5 @@
-from promofinder.pipeline.models import Beat, Episode
-from promofinder.pipeline.validate import validate
+from kukuads.pipeline.models import Beat, Episode
+from kukuads.pipeline.validate import validate
 
 CFG = {"min_s": 20, "max_s": 60, "hook_window_s": 3}
 

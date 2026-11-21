@@ -1,7 +1,8 @@
 """KuKuAds CLI.
 
 Examples
-  python run.py --scripts "path/to/show"                                  # full run, models from config.yaml
+  python run.py --selftest                                                # offline check, no LLM
+  python run.py --scripts "path/to/show"                                  # full run, models from configs/config.yaml
   python run.py --scripts "path/to/show" --episodes 1-5                   # a few episodes
   python run.py --scripts "path/to/show" --provider anthropic --model claude-sonnet-5-5   # swap model
   python run.py --scripts "path/to/show" --judge-provider openai --judge-model <id>       # swap judge only
@@ -17,13 +18,14 @@ from dotenv import load_dotenv
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "src"))  # run without installing the package
 
-from promofinder.llm import apply_overrides, load_config
-from promofinder.pipeline.runner import run_pipeline
+from kukuads.llm import apply_overrides, load_config
+from kukuads.pipeline.runner import run_pipeline
 
 
 def main() -> int:
     ap = argparse.ArgumentParser(description="Find, validate, judge and rank promos in a microdrama screenplay.")
-    ap.add_argument("--scripts", required=True, help="folder of episode screenplays (.txt)")
+    ap.add_argument("--scripts", help="folder of episode screenplays (.txt)")
+    ap.add_argument("--selftest", action="store_true", help="offline check of the pipeline code (no LLM, no key)")
     ap.add_argument("--out", help="output folder (default: outputs/run-<timestamp>)")
     ap.add_argument("--episodes", help="subset, e.g. '1-5,12'")
     ap.add_argument("--config", default="configs/config.yaml")
@@ -35,6 +37,14 @@ def main() -> int:
     ap.add_argument("--no-baseline", action="store_true", help="skip the rules-only baseline")
     ap.add_argument("--no-cache", action="store_true", help="ignore cached LLM replies")
     args = ap.parse_args()
+    if args.selftest:
+        from kukuads.selftest import run_selftest
+        steps = run_selftest()
+        for s in steps:
+            print(f"[{'ok' if s['ok'] else 'FAIL'}] {s['step']}: {s['detail']}")
+        return 0 if len(steps) == 4 and all(s["ok"] for s in steps) else 1
+    if not args.scripts:
+        ap.error("--scripts is required (or use --selftest)")
 
     # Windows consoles default to cp1252; model text often has non-ASCII punctuation.
     for stream in (sys.stdout, sys.stderr):

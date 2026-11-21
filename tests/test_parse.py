@@ -1,4 +1,4 @@
-from promofinder.pipeline.parse import parse_screenplay
+from kukuads.pipeline.parse import parse_screenplay
 
 SAMPLE = """EPISODE NUMBER: Episode 7
 EPISODE LOGLINE: A test logline.

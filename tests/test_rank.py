@@ -1,5 +1,5 @@
-from promofinder.pipeline.models import Promo, Segment
-from promofinder.pipeline.rank import rank
+from kukuads.pipeline.models import Promo, Segment
+from kukuads.pipeline.rank import rank
 
 CFG = {"weights": {"hook": 0.3, "cliffhanger": 0.3, "clarity": 0.3, "intensity": 0.1},
        "entry_point_bonus": 0.05, "entry_point_episodes": 5, "max_per_episode_in_top": 1, "top_n": 10}

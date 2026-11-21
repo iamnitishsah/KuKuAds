@@ -31,8 +31,7 @@ Answer ONLY with JSON in exactly this shape:
   "hook": "<the hook in a few words, quoting the key line>",
   "cliffhanger": "<the unresolved moment it cuts on>",
   "why": "<one line: why a cold viewer would stop and want more>",
-  "patterns": ["betrayal or shocking reveal"],
-  "context_needed": "none | low | high"
+  "patterns": ["betrayal or shocking reveal"]
 }}]}}
 Use ONLY beat IDs from the list. Never write timestamps yourself."""
 

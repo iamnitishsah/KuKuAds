@@ -71,7 +71,6 @@ class Promo:
     cliffhanger: str = ""
     why: str = ""
     patterns: list[str] = field(default_factory=list)
-    context_needed: str = ""
     hook_beat: str = ""
     cliffhanger_beat: str = ""
     status: str = "candidate"         # candidate | valid | rejected
@@ -84,6 +83,9 @@ class Promo:
     @property
     def duration(self) -> float:
         return round(sum(s.duration for s in self.segments), 2)
+
+    def start_end(self) -> str:
+        return ", ".join(f"Ep {s.episode} {s.start:.1f}-{s.end:.1f}s" for s in self.segments)
 
     @property
     def episodes(self) -> list[int]:

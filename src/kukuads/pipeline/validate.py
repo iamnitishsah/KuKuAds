@@ -70,8 +70,7 @@ def validate(raw: dict, ep: Episode, promo_id: str, cfg: dict, source: str = "ll
     hook_window = cfg.get("hook_window_s", 3)
     p = Promo(promo_id=promo_id, source=source, segments=[],
               hook=str(raw.get("hook", "")), cliffhanger=str(raw.get("cliffhanger", "")),
-              why=str(raw.get("why", "")), patterns=list(raw.get("patterns") or []),
-              context_needed=str(raw.get("context_needed", "")))
+              why=str(raw.get("why", "")), patterns=list(raw.get("patterns") or []))
 
     def reject(reason: str) -> Promo:
         p.status = "rejected"

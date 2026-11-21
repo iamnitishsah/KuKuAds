@@ -1,7 +1,7 @@
 import pytest
 
-from promofinder.llm.client import LLMClient, extract_json
-from promofinder.llm.providers import LLMResponse
+from kukuads.llm.client import LLMClient, extract_json
+from kukuads.llm.providers import LLMResponse
 
 
 def test_extract_json_handles_fences_and_chatter():

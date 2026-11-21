@@ -1,6 +1,6 @@
 """Runs the whole pipeline on a folder of screenplays and writes the raw outputs.
 
-Used by both the CLI (run.py) and the FastAPI app, so they always behave the same.
+Used by both the CLI (run.py) and the Streamlit app, so they always behave the same.
 """
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ import time
 from pathlib import Path
 from typing import Callable
 
-from promofinder.llm import LLMError, make_clients
+from kukuads.llm import LLMError, make_clients
 
 from .baseline import baseline_episode
 from .find import find_candidates
