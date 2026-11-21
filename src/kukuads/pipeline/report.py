@@ -113,10 +113,15 @@ def write_report(out: Path, episodes: list[Episode], promos: list[Promo], rows: 
     reasons = Counter(p.notes[-1].split(" (")[0] for p in rejected if p.notes)
     fixes = Counter(n.split(" (")[0] for p in valid for n in p.notes if "judge" not in n)
     L += ["## Validation funnel", "",
-          f"- Proposed by the finder: **{len(promos)}**  ·  valid: **{len(valid)}**  ·  rejected: **{len(rejected)}**",
+          f"- Proposed by the finder: **{len(promos)}**  ·  valid: **{len(valid)}**  ·  rejected: **{len(rejected)}**"
+          + (f"  ·  unjudged: **{sum(p.status == 'unjudged' for p in promos)}**" if any(p.status == "unjudged" for p in promos) else ""),
           "- Rejection reasons: " + (", ".join(f"{k} ×{v}" for k, v in reasons.most_common()) or "none"),
           "- Automatic fixes applied to valid promos: " + (", ".join(f"{k} ×{v}" for k, v in fixes.most_common()) or "none"),
           ""]
+    unjudged = [p for p in promos if p.status == "unjudged"]
+    if unjudged:
+        L[-1:] = [f"- **Could not be judged: {len(unjudged)}** ({', '.join(p.promo_id for p in unjudged)}). They are left out of the "
+                  "ranking. Run the same command again to resume; finished judgements come from the cache.", ""]
 
     # Quality
     llm_best = _best_per_episode(promos, "llm")

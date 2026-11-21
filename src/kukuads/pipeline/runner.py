@@ -118,7 +118,8 @@ def run_pipeline(scripts_dir: str | Path, out_dir: str | Path, cfg: dict, episod
                 say("judge", i, len(to_judge), f"{p.promo_id}: hook {j['hook']} / cliff {j['cliffhanger']} / clarity {j['clarity']}")
             except LLMError as e:
                 errors.append(f"judge {p.promo_id}: {e}")
-                p.notes.append("judge failed")
+                p.status = "unjudged"        # kept out of the ranking: an unscored promo must not sit among the scored ones
+                p.notes.append("judge failed: run the same command again to resume (judged clips come from the cache)")
                 say("judge", i, len(to_judge), f"{p.promo_id}: FAILED - {str(e)[:120]}")
 
     # Stage 4b: rank
@@ -137,6 +138,7 @@ def run_pipeline(scripts_dir: str | Path, out_dir: str | Path, cfg: dict, episod
         "finder_chain": cfg["stages"]["finder"], "judge_chain": cfg["stages"]["judge"],
         "promo_rules": pcfg, "ranking": cfg.get("ranking", {}),
         "wall_time_s": round(time.time() - t0, 1), "errors": errors,
+        "unjudged": [p.promo_id for p in llm_promos if p.status == "unjudged"],
         "finished_at": time.strftime("%Y-%m-%d %H:%M:%S"),
     }
     (out / "run_meta.json").write_text(json.dumps(meta, indent=1), encoding="utf-8")

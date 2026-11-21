@@ -70,7 +70,11 @@ def side_panel(run: dict) -> None:
     with t_run:
         cands = run["candidates"]
         valid = sum(c["status"] == "valid" for c in cands)
-        st.markdown(f"**Funnel:** {len(cands)} proposed → {valid} valid → {len(cands) - valid} rejected")
+        unjudged = sum(c["status"] == "unjudged" for c in cands)
+        st.markdown(f"**Funnel:** {len(cands)} proposed → {valid} valid, {len(cands) - valid - unjudged} rejected"
+                    + (f", **{unjudged} could not be judged**" if unjudged else ""))
+        if unjudged:
+            st.warning("Some promos could not be judged and are left out of the ranking. Run again to resume from the cache.")
         for c in [c for c in cands if c["status"] == "rejected"][:5]:
             st.caption(f"{c['promo_id']}: {'; '.join(c['notes'])}")
         st.markdown(f"**Wall time:** {meta.get('wall_time_s', '-')} s · **errors:** {len(meta.get('errors') or [])}")

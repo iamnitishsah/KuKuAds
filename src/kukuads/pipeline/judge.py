@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from statistics import mean
 
+from ..llm import LLMError
 from .models import Episode, Promo
 from .prompts import JUDGE_SYSTEM, JUDGE_USER
 
@@ -50,10 +51,18 @@ def _score(v, default=1) -> int:
 def judge_promo(promo: Promo, episodes_by_num: dict[int, Episode], client, repeats: int = 1) -> Promo:
     clip = clip_transcript(promo, episodes_by_num)
     user = JUDGE_USER.format(duration=promo.duration, clip=clip)
-    runs = []
+    runs, last_error = [], None
     for k in range(max(1, repeats)):
-        data, meta = client.complete_json(JUDGE_SYSTEM, user, tag=f"judge:{promo.promo_id}#{k + 1}", variant=k)
+        try:
+            data, meta = client.complete_json(JUDGE_SYSTEM, user, tag=f"judge:{promo.promo_id}#{k + 1}", variant=k)
+        except LLMError as e:       # one failed repeat must not throw away the ones that worked
+            last_error = e
+            continue
         runs.append(({d: _score(data.get(d)) for d in DIMS}, data, meta))
+    if not runs:
+        raise last_error
+    if len(runs) < max(1, repeats):
+        promo.notes.append(f"judged {len(runs)} of {repeats} times (a repeat failed): scores are less reliable")
 
     first, meta = runs[0][1], runs[0][2]
     promo.judge = {
