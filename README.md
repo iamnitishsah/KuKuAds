@@ -34,7 +34,7 @@ pip install -r requirements.txt
 cp .env.example .env            # defaults need GROQ_API_KEY and GEMINI_API_KEY
 
 python run.py --selftest        # offline check that the code works (no key, no data)
-python -m pytest -q             # 22 tests
+python -m pytest -q             # 33 tests
 streamlit run app.py            # the app (tabs: Overview, Find promos, How it works, Evaluation, Status)
 
 # command line, real run (screenplays go in data/raw/, which is gitignored)
@@ -82,6 +82,5 @@ tests/
 - Works from the screenplay, not the video: it assumes the final edit follows the script's timings.
 - The judge is an AI, so its scores are a proxy for real viewer behaviour, not a replacement for A/B tests.
 - Promos stay within one episode; later episodes are harder for a stranger to follow.
-- Known open issues (one clip 0.3 s over the cap is rejected, a few cuts land 0.1–0.2 s inside a line, no brand-safety
-  check): [docs/ROADMAP.md](docs/ROADMAP.md).
+- Known open issues (no brand-safety check, a lenient judge, no human-labelled check): [docs/ROADMAP.md](docs/ROADMAP.md).
 - The screenplays are Kuku's confidential content and are not in this repository.

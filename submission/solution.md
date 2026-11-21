@@ -46,14 +46,14 @@ So the AI's real value is **choosing where to cut**; on hook and clarity a simpl
 **Not done:** a human-labelled check (about 20 blind clips) of the judge. Until then, "good" means "an AI judge agrees", which is a proxy. The real measure is the 3-second hold rate and click-through of A/B-tested ads.
 
 ## Where it fails
-- **Coverage depends on the model.** The archived run misses Ep 42 (a 17.4 s clip was rejected); another run covers it but misses Ep 33 (60.3 s, 0.3 s over the cap). The real problem is the hard 60 s limit.
-- **Cut edges.** E04-P2 ends 0.1 s inside a line and E32-P1 starts 0.2 s inside one.
+- **Coverage depends on the model.** The archived run misses Ep 42 (a 17.4 s clip was rejected); another run misses Ep 33 (60.3 s, 0.3 s over the cap). Both are now repaired in code; replaying every archived pick, all 10 length rejections become valid. Not yet re-run end to end on all 50 episodes.
+- **Cut edges.** E04-P2 ended 0.1 s inside a line and E32-P1 started 0.2 s inside one in the archived run. Both edges are now checked; the replay finds none.
 - **Lenient judge.** 72% of scores are 4 or 5, so small gaps at the top are weak evidence.
 - **Self-grading.** In the second run the same model found and judged every promo, so those scores may be generous.
 - **Brand safety.** The #1 and #3 picks (Ep 31, 32) show a red-hot iron inches from an eye. There is no safety check yet.
 - **Low clarity.** Mid-story scenes with unexplained names or relationships (for example E49-P1, E06-P2, E17-P1).
 
-Next I would: repair clips instead of rejecting them, add edge checks, rank the top clips head to head, add a safety flag, then build the human-labelled set.
+Next I would: rank the top clips head to head, add a safety flag, re-run all 50 episodes with the fixed validator, then build the human-labelled set.
 
 ## AI tools used, and one place they got it wrong
 Claude Code for research, code and checking results; `gpt-oss-120b` and `command-a` (through a local router) as the finder; a self-hosted `qwen3.8:27b` as the judge.

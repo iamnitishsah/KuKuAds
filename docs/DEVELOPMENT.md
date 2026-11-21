@@ -10,7 +10,7 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env          # only the keys for the providers you use
 python run.py --selftest      # offline pipeline check
-python -m pytest -q           # 22 tests; no network or API key needed
+python -m pytest -q           # 33 tests; no network or API key needed
 ```
 
 `run.py` adds `src/` to the path, so nothing needs installing. `pyproject.toml` also sets `pythonpath = ["src"]` for pytest.
@@ -50,7 +50,7 @@ python -m pytest -q
 python -m pytest tests/test_validate.py -q
 ```
 
-Covered: parser, validator, ranker, LLM client, self-test, backend check, the app (tabs, demo run, session key). Not covered directly: `find`, `baseline`, `report`, `runner` (the self-test exercises `judge`; the app test exercises `report`).
+Covered: parser, validator (edge cases and length repair), ranker, LLM client, judge failure handling and the runner, self-test, backend check, the app (tabs, demo run, session key). Not covered directly: `find`, `baseline`, `report` (the app test exercises `report`).
 
 ## Mistakes log: what went wrong and how it was solved
 
@@ -68,7 +68,7 @@ All real; evidence is in the git history and `outputs/` runs (kept as `full-run-
 | 8 | **Report said "mixed judges" even with one judge** | Reading the regenerated report | Wording is now conditional on the number of judge models |
 | 9 | **CLI crashed with `UnicodeEncodeError`** on a Windows cp1252 console | First full-run print | Reconfigure stdout/stderr to UTF-8 |
 | 10 | **`git push` / `curl` fail on this Windows machine** (schannel certificate-revocation check) | Error `CRYPT_E_REVOCATION_OFFLINE` | Python's httpx/openai clients are unaffected; push needs the user's terminal (`http.schannelCheckRevoke` setting). Unresolved on my side |
-| 11 | **Validator rejected a good episode instead of repairing it** (Ep 42: 17.4 s after the start moved to the hook) | Audit found one episode with no promo although the best scene was in the funnel | Open. Plan: extend the end to the next strong beat, then re-ask the finder once with the reason |
+| 11 | **Validator rejected a good episode instead of repairing it** (Ep 42: 17.4 s after the start moved to the hook) | Audit found one episode with no promo although the best scene was in the funnel | Fixed: a too-short clip is repaired (start back to a strong beat, else end extended past the cliffhanger, else start back to a weaker hook) before it is rejected; a too-long clip falls back to a weaker later hook. Replay of all 10 archived length rejections: all now valid |
 | 12 | **I almost trusted the first ranking** before measuring whether the judge was stable | Repeated each judgement twice and computed rank correlation (0.90) and top-15 overlap (11/15) | Judge stability is now part of the report |
 
 ## What I'd tell an interviewer

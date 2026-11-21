@@ -10,7 +10,7 @@ timestamps and enforces the rules (code) → a separate "cold viewer" LLM scores
 |---|---|---|---|---|
 | 1 | Parse | code | `.txt` screenplay → beats with stable IDs (`E01-B008`), type, speaker, start/end, intensity | Format is regular; code is exact and free. 3,727 beats parsed, 0 mismatches |
 | 2 | Find | LLM (1 call/episode) | episode beats → candidate promos as **beat IDs only** | Needs story judgement. IDs only, so the model cannot invent a timestamp |
-| 3 | Validate | code | candidates → timestamps; enforce 20–60 s, hook within 3 s, end on cliffhanger, never cut a spoken line, snap to shot edges | Rules are checkable; every fix or rejection is logged in `notes` |
+| 3 | Validate | code | candidates → timestamps; enforce 20–60 s, hook within 3 s, end on cliffhanger, never cut a spoken line, snap to shot edges when there is room; repair a too-short or too-long clip before rejecting it | Rules are checkable; every fix or rejection is logged in `notes` |
 | 4 | Judge | a *different* LLM | clip transcript only (dialogue + shot descriptions) → hook / cliffhanger / clarity, anchored 1–5 | Simulates a viewer who has never seen the show |
 | 5 | Rank | code | judge scores + screenplay intensity + early-episode bonus | Transparent, tunable weights in `configs/config.yaml` |
 | – | Baseline | code | rules-only sliding window, judged by the same judge | The control: does the LLM finder add anything? |

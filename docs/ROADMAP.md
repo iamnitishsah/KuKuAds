@@ -1,12 +1,7 @@
 # Roadmap
 
-Open items already recorded in the evaluation and findings. Nothing below is built yet. Details and evidence are in
+Open items from the evaluation and findings. Nothing below is built yet. (The validator repair, edge checks and judge-failure handling are done: see findings.md, "Fixed since the archived run".) Details and evidence are in
 [findings.md](findings.md).
-
-## Validator
-- Repair instead of reject for too-short clips (Ep 42: 17.4 s after the start moved to the hook).
-- Repair boundary-length clips (Ep 33: 60.3 s after repair, 0.3 s over the 60 s cap).
-- Start/end edge checks: E04-P2 ends 0.1 s inside a spoken line; E32-P1 starts 0.2 s inside one.
 
 ## Judging and ranking
 - Head-to-head comparisons (both orders) for the top ~24 clips, to counter the lenient judge.

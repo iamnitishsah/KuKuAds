@@ -128,14 +128,31 @@ all numbers: [`eval/reports/LLM2_EVALUATION.md`](../eval/reports/LLM2_EVALUATION
 
 | Issue | Detail | Status |
 |---|---|---|
-| Missed episode | **Model-dependent.** The archived `gpt-oss` run misses **Ep 42** (E42-P1 rejected at 17.4 s after the hook move). The all-qwen run covers Ep 42 (E42-P1 59.9 s, #5) but misses **Ep 33**: E33-P1 started at 100.3 s, the start moved to B064, leaving **60.3 s** — 0.3 s over the 60 s cap — and was rejected. The stable issue is the hard 60 s boundary, not one episode. | open, fix planned |
-| Cut edges | **E04-P2** ends 0.1 s inside a spoken line; **E32-P1** starts 0.2 s inside one. **E01-P1** does include Gerald's "I changed my mind."; Clarissa's sting ("People change their minds, sister.") starts 3.5 s after the cut. **E47-P1** does not end mid-sentence — the complete line is B067 and the next line is omitted whole. | open, fix planned |
+| Missed episode | **Model-dependent.** The archived `gpt-oss` run misses **Ep 42** (E42-P1 rejected at 17.4 s after the hook move). The all-qwen run covers Ep 42 (E42-P1 59.9 s, #5) but misses **Ep 33**: E33-P1 started at 100.3 s, the start moved to B064, leaving **60.3 s** — 0.3 s over the 60 s cap — and was rejected. The stable issue is the hard 60 s boundary, not one episode. | **fixed in code** (see below); archived run not regenerated |
+| Cut edges | **E04-P2** ends 0.1 s inside a spoken line; **E32-P1** starts 0.2 s inside one. **E01-P1** does include Gerald's "I changed my mind."; Clarissa's sting ("People change their minds, sister.") starts 3.5 s after the cut. **E47-P1** does not end mid-sentence — the complete line is B067 and the next line is omitted whole. | **fixed in code** (see below); archived run not regenerated |
 | Lenient judge | **72.2%** of the archived averaged LLM dimension scores are ≥4; **75.1%** in the all-qwen run. The often-quoted **79%** only appears when pooling raw repeats across all 128 clips, including the baseline. | open, fix planned (pairwise) |
 | Self-grading | The archived run has **0/78** LLM promos graded by the finder model. The all-qwen run has **83/83** — the same model found and judged every promo, so its scores may be generous and are not independent. | known limit |
 | Brand safety | Ep 31/32 are real and high-ranked: E31-P2 is **#1**, E32-P1 is **#3**, both with a red-hot iron inches from an eye (threat, no contact). Ep 39 is **#47** and the guard is knocked **unconscious**, not killed. Ep 50 is **#63**: the intimate scene is real, but the promo is near the bottom. | open, no check yet |
 | Low-clarity picks | E49-P1 (2.5), then E06-P2, E17-P1, E19-P3, E07-P2, E20-P1, E09-P1, E14-P1, E33-P3, E37-P3 (all 3.0). Every one is low-ranked (ranks 56–78); none is a top-15 pick. | known limit |
 | Useless field | `context_needed` came back `"low"` for **84/84** proposals. Zero variance, no signal; `rank.py` never reads it. | field removed from the prompt |
 | Late-episode skew | **Not supported** by the delivered top 15: mean episode 23.2 vs 23.97 for all promos; only the top 3 are late. Removing the 0.05 early-episode bonus changes no top-15 membership, only the order. | not supported |
+
+## Fixed since the archived run
+
+The validator and the judge-failure handling were changed after the archived runs. Checked by replaying every promo
+from both archived runs through the new code against the screenplays:
+
+| Problem | Fix | Replay result |
+|---|---|---|
+| Too-short clips rejected (Ep 42 and 8 others) | repair before rejecting: start back to a strong beat, else end extended past the cliffhanger, else start back to a weaker hook; every repair is logged in `notes` | all 9 previously rejected short clips are now valid (Ep 42 becomes 30.2 s with a weaker hook) |
+| Boundary clip rejected (Ep 33: 60.3 s) | shot snapping can no longer push a clip past the cap; a too-long clip falls back to a later beat | valid at exactly 60.0 s |
+| Cuts inside a spoken line (E04-P2 end, E32-P1 start) | both edges are checked after shot snapping | 6 edges moved, all off a spoken line; 155 of 161 previously valid promos unchanged |
+| Hook pushed past 3 s by shot snapping | the start only snaps back while the hook stays inside the window; a final check rejects otherwise | 0 of 171 replayed promos break the length, hook-window or cut-inside-a-line rules |
+| A promo whose judge call failed stayed "valid" with a score of 0 | it becomes `unjudged`, is left out of the ranking, and the report and app say so; one failed repeat no longer discards the other | covered by tests |
+
+This is a replay of the finder's archived picks, not a new end-to-end run: the AI stages were not re-run on all 50
+episodes, so the numbers elsewhere in this file still describe the archived run. A repaired clip ends past the finder's
+cliffhanger, so the judge scores the cliffhanger of the clip as it now ends.
 
 ## What it does not do
 

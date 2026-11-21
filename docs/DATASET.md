@@ -48,5 +48,5 @@ clip transcript (dialogue, on-screen action and shots, sounds, seconds from clip
 ## Rules enforced by code (`pipeline/validate.py`, values in `configs/config.yaml`)
 
 20-60 s total; hook beat within 3 s of the start; end at the cliffhanger beat (up to 3 s slack); cuts never inside a
-spoken line; start snaps back up to 1 s and end forward up to 1.5 s to shot edges; duplicates (overlap above 60%)
+spoken line (at either edge); start snaps back up to 1 s and end forward up to 1.5 s to shot edges, but only if the clip stays within 60 s and the hook within 3 s; a too-short clip is repaired (start back to a strong beat, else end extended past the cliffhanger, else start back to a weaker hook) and a too-long one starts at a later beat; duplicates (overlap above 60%)
 rejected.
