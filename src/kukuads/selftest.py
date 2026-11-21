@@ -95,3 +95,38 @@ def run_selftest() -> list[dict]:
         if not ok:
             break
     return steps
+
+
+def write_demo_run(out_dir) -> str:
+    """Write a complete run folder (same files a real run writes) from the synthetic episode and stub judge.
+
+    Lets the app be shown, and its Results view tested, with no key and no screenplay data."""
+    import json
+    import time
+    from pathlib import Path
+
+    from .pipeline.report import write_report
+
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    ep = parse_screenplay(SAMPLE)
+    raws = [{"segments": [{"start_beat": "E01-B002", "end_beat": "E01-B008"}], "hook_beat": "E01-B002",
+             "cliffhanger_beat": "E01-B008", "hook": "\"You should turn around, Anna!\"",
+             "cliffhanger": "Strings swell after \"Everything was never yours, sister.\"",
+             "why": "A public betrayal at the altar, then a cruel line left hanging.", "patterns": ["betrayal or shocking reveal"]}]
+    cfg = {"min_s": 20, "max_s": 60, "hook_window_s": 3}
+    promos = validate_episode(raws, ep, cfg, "demo/stub")
+    stub = _StubClient({"hook": 5, "cliffhanger": 4, "clarity": 4, "summary": "A bride is jilted in public.",
+                        "confusing": "nothing", "want_next": "What will Anna do?"})
+    for pr in promos:
+        judge_promo(pr, {1: ep}, stub, repeats=2)
+    rows = rank(promos, {"weights": {"hook": .3, "cliffhanger": .3, "clarity": .3, "intensity": .1}, "top_n": 15})
+    meta = {"scripts_dir": "demo", "episodes": [1], "finder_chain": [{"provider": "demo", "model": "demo-finder"}],
+            "judge_chain": [{"provider": "demo", "model": "stub"}], "promo_rules": cfg, "ranking": {},
+            "wall_time_s": 0.0, "errors": [], "finished_at": time.strftime("%Y-%m-%d %H:%M:%S")}
+    (out / "beats.json").write_text(json.dumps([ep.to_dict()], ensure_ascii=False), encoding="utf-8")
+    (out / "promos_ranked.json").write_text(json.dumps(rows, ensure_ascii=False, indent=1), encoding="utf-8")
+    (out / "candidates.json").write_text(json.dumps([p.to_dict() for p in promos], ensure_ascii=False), encoding="utf-8")
+    (out / "run_meta.json").write_text(json.dumps(meta, indent=1), encoding="utf-8")
+    write_report(out, [ep], promos, rows, [], meta)
+    return out.name

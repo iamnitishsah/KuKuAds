@@ -42,3 +42,14 @@ def check_backends(cfg: dict, timeout: float = 4.0) -> list[dict]:
                         row["reachable"], row["detail"] = False, f"not reachable ({type(e).__name__})"
             rows.append(row)
     return rows
+
+
+def ping(entry: dict, cfg: dict) -> tuple[bool, str]:
+    """One tiny real completion against a configured model: (ok, detail). Never raises."""
+    from .llm.providers import build_provider
+    try:
+        prov = build_provider(entry["provider"], entry["model"], cfg["providers"][entry["provider"]], cfg.get("llm", {}))
+        r = prov.complete('Answer ONLY with JSON: {"ok": true}', "Return the JSON.", max_tokens=1500)
+        return True, f"answered by {r.model} in {r.latency_s}s"
+    except Exception as e:
+        return False, f"{type(e).__name__}: {str(e)[:140]}"
