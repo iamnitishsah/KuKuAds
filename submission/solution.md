@@ -26,7 +26,7 @@ can be checked (a time range, a hook, a cliffhanger) and where code and AI each 
 **Human in the loop:** the tool proposes and explains; an editor decides what to post.
 **Swappable model:** one model per step in `configs/config.yaml`, or `python run.py --scripts <folder> --provider anthropic --model <id>`.
 OpenAI, Gemini, Groq, Anthropic, Ollama and any OpenAI-compatible router work. A new show is the same command with a different folder.
-**Check it runs:** `python run.py --selftest` (offline) or `streamlit run app.py`, whose Status tab also shows which models are reachable.
+**Check it runs:** `python run.py --selftest` (offline) or `streamlit run app.py`, whose Live demo tab also shows which models are reachable.
 
 ## Scale and cost
 50 episodes is about 169k tokens. A full run was about 517k tokens (50 finder calls, 256 judge calls) and took about 51 minutes on a free self-hosted 27B model. Cost grows linearly with episodes, and re-runs are free from the cache. With a paid API I would use a stronger model for finding and judging and run shows in parallel; the pipeline would not change.
@@ -36,18 +36,18 @@ OpenAI, Gemini, Groq, Anthropic, Ollama and any OpenAI-compatible router work. A
 |---|---|
 | Rules, checked in code | 78 of 78 promos are 20–60 s with the hook inside 3 s; 77 of 78 end on the cliffhanger |
 | Invented quotes | 0 |
-| Coverage | 84 proposed, 78 valid; 49 of 50 episodes have a promo |
+| Coverage | 84 proposed, 78 valid; 49 of 50 episodes have a promo. After the validator fixes a re-run has 72 valid and **50 of 50** |
 | Against the rules-only baseline | The AI's best promo wins in 31 of 49 episodes (not statistically proven). Its edge is the cliffhanger (better in 20, worse in 7). Hook and clarity are not clearly better |
 | Is the judge steady? | Judging twice gives the same score 79% of the time and within 1 point 99%; the two rankings correlate at 0.90 |
 | Did the AI grade its own picks? | No: 0 of 78 |
-| Different finder model | Only 2 of the top 5 survive. E31-P2 is #1 in both runs and in a blinded second-AI check |
+| Different finder model, or a re-run | Only 2 of the top 5 survive either way (a re-run of the same model also gives 2 of 5). The shortlist moves between runs, so it is a shortlist, not a verdict. In the re-run the cliffhanger gain is stronger (better in 25, worse in 7) |
 
 So the AI's real value is **choosing where to cut**; on hook and clarity a simple baseline is close.
 **Not done:** a human-labelled check (about 20 blind clips) of the judge. Until then, "good" means "an AI judge agrees", which is a proxy. The real measure is the 3-second hold rate and click-through of A/B-tested ads.
 
 ## Where it fails
-- **Coverage depends on the model.** The archived run misses Ep 42 (a 17.4 s clip was rejected); another run misses Ep 33 (60.3 s, 0.3 s over the cap). Both are now repaired in code; replaying every archived pick, all 10 length rejections become valid. Not yet re-run end to end on all 50 episodes.
-- **Cut edges.** E04-P2 ended 0.1 s inside a line and E32-P1 started 0.2 s inside one in the archived run. Both edges are now checked; the replay finds none.
+- **Coverage depends on the model.** The archived run misses Ep 42 (a 17.4 s clip was rejected); another run misses Ep 33 (60.3 s, 0.3 s over the cap). Both are now repaired in code: replaying every archived pick makes all 10 length rejections valid, and a fresh 50-episode run covers 50 of 50 episodes.
+- **Cut edges.** E04-P2 ended 0.1 s inside a line and E32-P1 started 0.2 s inside one in the archived run. Both edges are now checked; the 50-episode re-run has 0 of 154 edges inside a line.
 - **Lenient judge.** 72% of scores are 4 or 5, so small gaps at the top are weak evidence.
 - **Self-grading.** In the second run the same model found and judged every promo, so those scores may be generous.
 - **Brand safety.** The #1 and #3 picks (Ep 31, 32) show a red-hot iron inches from an eye. There is no safety check yet.

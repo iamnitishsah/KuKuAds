@@ -7,10 +7,12 @@ the cliffhanger, one line on why it works, and a rank.
 
 Built for the Kuku AI Generalist assignment, Problem 1 (Find the Promos).
 
-**Result on the 50-episode show:** 78 valid promos, at least one in 49 of 50 episodes; every promo is 20–60 s with
-the hook inside 3 s. The AI's real contribution is *where to cut*: it picked a better cliffhanger than a rules-only
-baseline in 20 of 49 episodes (worse in 7). On hook and clarity it is not clearly better. There is no human-labelled
-check yet. Details and limits: [docs/findings.md](docs/findings.md).
+**Result on the 50-episode show:** the archived run found 78 valid promos, at least one in 49 of 50 episodes; a re-run
+after the validator fixes found 72 and covers **50 of 50**. Every promo is 20–60 s with the hook inside 3 s, and the
+re-run has no cut inside a spoken line. The AI's real contribution is *where to cut*: it picked a better cliffhanger than
+a rules-only baseline in 20 of 49 episodes in the archived run (25 of 50 in the re-run). On hook and clarity it is not
+clearly better. The shortlist changes between runs, and there is no human-labelled check yet. Details and limits:
+[docs/findings.md](docs/findings.md).
 
 ## How it works
 
@@ -35,15 +37,15 @@ cp .env.example .env            # defaults need GROQ_API_KEY and GEMINI_API_KEY
 
 python run.py --selftest        # offline check that the code works (no key, no data)
 python -m pytest -q             # 33 tests
-streamlit run app.py            # the app (tabs: Overview, Find promos, How it works, Evaluation, Status)
+streamlit run app.py            # the app (tabs: Overview, Live demo, How it works, Evaluation)
 
 # command line, real run (screenplays go in data/raw/, which is gitignored)
 python run.py --scripts "data/raw/<show folder>" --episodes 1-3        # models from configs/config.yaml
 ```
 
-The app's **Status** tab answers "is it running?": a self-test button and a table of which configured models are
-reachable; **Settings** has your own API key (memory only) and a real **Test connection**; **Try the demo** shows a
-full result with no key and no data. Every flag and the output format: [docs/API.md](docs/API.md).
+The app's **Live demo** tab answers "is it running?": a self-test button, a check of which configured models are
+reachable, and **Try the demo**, which shows a full result with no key and no data; **Settings** has your own API key
+(memory only) and a real **Test connection**. Every flag and the output format: [docs/API.md](docs/API.md).
 
 Each run writes `outputs/run-<time>/` with `report.md` (start here), `promos_ranked.csv/json`, `candidates.json`,
 `baseline.json` and `llm_calls.jsonl`.

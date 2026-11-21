@@ -71,6 +71,8 @@ All real; evidence is in the git history and `outputs/` runs (kept as `full-run-
 | 11 | **Validator rejected a good episode instead of repairing it** (Ep 42: 17.4 s after the start moved to the hook) | Audit found one episode with no promo although the best scene was in the funnel | Fixed: a too-short clip is repaired (start back to a strong beat, else end extended past the cliffhanger, else start back to a weaker hook) before it is rejected; a too-long clip falls back to a weaker later hook. Replay of all 10 archived length rejections: all now valid |
 | 12 | **I almost trusted the first ranking** before measuring whether the judge was stable | Repeated each judgement twice and computed rank correlation (0.90) and top-15 overlap (11/15) | Judge stability is now part of the report |
 
+| 13 | **Groq free tier ran out mid-run**: about 200,000 tokens per day per key and model, so a 50-episode run needs more than one key (finder stopped at episode 26; the judge hit it on the baseline clips) | `429 ... tokens per day` in `llm_calls.jsonl`; the report showed 22 promos as failed | Swap to a key with quota and run the same command again: finished calls come from the cache, only the missing ones are sent. The pipeline marks unjudged promos instead of scoring them 0 |
+
 ## What I'd tell an interviewer
 The most important lesson: a fallback that works *silently* is worse than a failure, because it quietly breaks the
 experiment. So the client logs which model really answered, and the report surfaces it.
