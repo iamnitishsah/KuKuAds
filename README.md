@@ -74,7 +74,6 @@ run.py  app.py          command line and Streamlit entry points
 data/raw/               screenplays (confidential, gitignored)
 outputs/                one folder per run (gitignored except its README)
 docs/  eval/reports/    documentation and evidence
-submission/             assignment brief and solution doc
 tests/
 ```
 

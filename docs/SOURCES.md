@@ -4,7 +4,7 @@
 - **Kuku input pack:** the first 50 episodes of *I Married a Broken Soldier. He was a Duke*, as detailed screenplays with
   a timestamp for every scene, line of dialogue and key action (3,727 beats, about 169k tokens).
   Kuku's confidential content, shared only for the assignment; kept in `data/raw/` and gitignored.
-- **Assignment brief:** `submission/Kuku-AI Generalist Assignment.pdf` (Problem 1: Find the Promos).
+- **Assignment brief:** the Kuku AI Generalist Assignment PDF, Problem 1: Find the Promos (kept locally, not in this repository).
 
 ## Models used
 Current defaults (`configs/config.yaml`; keys `GROQ_API_KEY` and `GEMINI_API_KEY` in `.env`):

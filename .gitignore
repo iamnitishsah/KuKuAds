@@ -234,3 +234,5 @@ outputs/*
 .claude/
 .mcp.json
 *.egg-info/
+
+/submission
