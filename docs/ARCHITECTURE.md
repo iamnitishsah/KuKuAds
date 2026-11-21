@@ -26,7 +26,6 @@ max one promo per episode in the top 15 (diversity).
 | Orchestrator | `pipeline/runner.py` | runs the stages in order and writes every output file; used by the CLI and the API |
 | LLM client | `llm/client.py` | pinned model per stage, fallback list, disk cache, call log, rate-limit wait |
 | Provider adapters | `llm/providers.py` | `openai_compatible` and `anthropic` |
-| CLI | `run.py` | see [API.md](API.md); `app.py` launches the app |
 | App | `ui/`, `health.py`, `selftest.py` | Streamlit app (five tabs and a settings dialog) over the same orchestrator; backend check; offline self-test and demo run |
 | Config | `configs/config.yaml` | models, rules, weights |
 
@@ -52,8 +51,8 @@ All LLM calls go through `llm/client.py` (`LLMClient`). Two adapters in `llm/pro
 - `openai_compatible`: OpenAI, Gemini (OpenAI endpoint), Groq, a local router, Ollama
 - `anthropic`
 
-`configs/config.yaml` pins **one model per stage** with an explicit fallback list. To change: edit the stage in `configs/config.yaml`, or
-`python run.py --provider anthropic --model <id>`, or `--judge-provider/--judge-model` for the judge only.
+`configs/config.yaml` pins **one model per stage** with an explicit fallback list. To change: edit the stage in `configs/config.yaml`, or use the
+app's Settings window (one model for every stage, or a different judge model).
 The client also provides: robust JSON extraction, disk cache (re-runs are free), a JSONL log of every call (which model
 really answered, tokens, latency), and wait-and-retry on rate limits.
 

@@ -9,12 +9,11 @@ CLI and HTTP interface see [API.md](API.md).
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env          # only the keys for the providers you use
-python run.py --selftest      # offline pipeline check
 python -m pytest -q           # 33 tests; no network or API key needed
 ```
 
-`run.py` adds `src/` to the path, so nothing needs installing. `pyproject.toml` also sets `pythonpath = ["src"]` for pytest.
-`make test`, `make selftest`, `make run SCRIPTS=...` and `make app` wrap the same commands.
+`app.py` adds `src/` to the path, so nothing needs installing. `pyproject.toml` also sets `pythonpath = ["src"]` for pytest.
+`make test` and `make app` wrap the same commands. The offline self-test is the **Run self-test** button on the app's Live demo tab.
 
 ## Layout
 
@@ -34,7 +33,7 @@ python -m pytest -q           # 33 tests; no network or API key needed
 - **Add a provider:** add an entry under `providers`; `openai_compatible` and `anthropic` are the only adapter types.
 - **Tune a prompt:** all prompts are in `pipeline/prompts.py`. Re-run with `--no-cache`, or the cache returns old replies.
 - **Change promo rules or ranking weights:** `promo` and `ranking` in `configs/config.yaml`; no code change needed.
-- **New show:** `python run.py --scripts <folder>` (or upload in the app); the parser is forgiving about case, spacing and missing headers.
+- **New show:** upload the files, or give a folder, in the app's Live demo tab; the parser is forgiving about case, spacing and missing headers.
 
 ## Rules that matter
 

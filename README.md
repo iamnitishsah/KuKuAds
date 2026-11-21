@@ -37,12 +37,8 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env            # defaults need GROQ_API_KEY and GEMINI_API_KEY
 
-python run.py --selftest        # offline check that the code works (no key, no data)
-python -m pytest -q             # 33 tests
+python -m pytest -q             # 33 tests, offline (no key, no data)
 streamlit run app.py            # the app, also deployed at kukuads.streamlit.app (tabs: Overview, Live demo, How it works, Evaluation)
-
-# command line, real run (screenplays go in data/raw/, which is gitignored)
-python run.py --scripts "data/raw/<show folder>" --episodes 1-3        # models from configs/config.yaml
 ```
 
 The app's **Live demo** tab answers "is it running?": a self-test button, a check of which configured models are
@@ -72,7 +68,7 @@ Longer evidence (real prompts and outputs per stage; a second-LLM check): [eval/
 ```
 configs/config.yaml     models, rules, ranking weights
 src/kukuads/        pipeline/ (the 5 stages + report), llm/ (model client), ui/ (Streamlit app), selftest.py, health.py
-run.py  app.py          command line and Streamlit entry points
+app.py                  Streamlit entry point
 data/raw/               screenplays (confidential, gitignored)
 outputs/                one folder per run (gitignored except its README)
 docs/  eval/reports/    documentation and evidence

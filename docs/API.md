@@ -1,32 +1,15 @@
 # Interfaces
 
-The command line and the Streamlit app run the same function, `pipeline.runner.run_pipeline`, so they behave identically.
+The Streamlit app runs one function, `pipeline.runner.run_pipeline`; the same call works from Python:
 
-## CLI: `run.py`
-
-```bash
-python run.py --scripts "data/raw/<show folder>"                                   # full show
-python run.py --scripts DIR --episodes 1-5,12                                      # subset
-python run.py --scripts DIR --provider anthropic --model claude-sonnet-5-5         # one model for every stage (needs ANTHROPIC_API_KEY)
-python run.py --scripts DIR --judge-provider openai --judge-model <id>             # swap only the judge
-python run.py --scripts DIR --out outputs/another-show                             # choose the output folder
+```python
+from kukuads.pipeline.runner import run_pipeline
+run_pipeline(scripts_dir, out_dir, cfg, episodes="1-5,12", do_judge=True, do_baseline=True)
 ```
 
-| Flag | Meaning |
-|---|---|
-| `--scripts DIR` | folder of episode `.txt` files (required) |
-| `--out DIR` | output folder (default `outputs/run-<timestamp>`) |
-| `--episodes SPEC` | e.g. `1-5,12` |
-| `--config FILE` | default `configs/config.yaml` |
-| `--provider P --model M` | pin all stages to one model (must be given together) |
-| `--judge-provider P --judge-model M` | pin only the judge |
-| `--selftest` | offline check, no LLM or key; `--scripts` not needed |
-| `--no-judge` | skip the judge (no ranking scores) |
-| `--no-baseline` | skip the rules-only baseline |
-| `--no-cache` | ignore cached LLM replies |
-
-Providers defined in `configs/config.yaml`: `freellm`, `openai`, `gemini`, `groq`, `anthropic`, `ollama`. Keys and URLs
-come from `.env` (see `.env.example`).
+`cfg` comes from `configs/config.yaml` (`kukuads.llm.load_config`); `apply_overrides` pins one model for every stage or only the
+judge. Providers defined there: `freellm`, `openai`, `gemini`, `groq`, `anthropic`, `ollama`. Keys and URLs come from `.env`
+(see `.env.example`). Screenplays go in `data/raw/` (gitignored). Each run writes to `outputs/run-<timestamp>/`.
 
 ## Streamlit app
 
@@ -50,8 +33,6 @@ Four tabs, plus a **Settings** dialog (button at the top right).
 **Settings:** use the models in `configs/config.yaml` or one model for every stage, a different judge model, your own API
 key (kept in this session's memory only, never written to disk), judge and baseline on/off, and **Test connection** (a
 real one-token call to the finder and the judge).
-
-The same self-test is available without the app: `python run.py --selftest` (exit code 0 means it passed).
 
 ## Output schema (`promos_ranked.json`)
 

@@ -1,6 +1,6 @@
 """Runs the whole pipeline on a folder of screenplays and writes the raw outputs.
 
-Used by both the CLI (run.py) and the Streamlit app, so they always behave the same.
+Used by the Streamlit app and callable from Python.
 """
 from __future__ import annotations
 
