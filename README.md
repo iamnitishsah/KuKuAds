@@ -62,7 +62,6 @@ Each run writes `outputs/run-<time>/` with `report.md` (start here), `promos_ran
 | [AI_LOG.md](docs/AI_LOG.md) | AI tools used and where they got it wrong |
 | [ROADMAP.md](docs/ROADMAP.md) | open fixes |
 | [SOURCES.md](docs/SOURCES.md) | input data, models, references |
-| [DEPLOYMENT.md](docs/DEPLOYMENT.md) | not done yet (empty) |
 
 Longer evidence (real prompts and outputs per stage; a second-LLM check): [eval/reports/](eval/reports/).
 
