@@ -2,7 +2,7 @@
 # Swap models here, or override from the CLI:  python run.py ... --provider anthropic --model <model-id>
 
 providers:
-  freellm:        # local router app (OpenAI-compatible)
+  freellm:        # optional: local OpenAI-compatible router (used for the archived run)
     type: openai_compatible
     base_url: http://127.0.0.1:31415/v1
     api_key_env: FREELLM_API_KEY
@@ -21,7 +21,7 @@ providers:
   anthropic:
     type: anthropic
     api_key_env: ANTHROPIC_API_KEY
-  ollama:         # self-hosted Ollama (e.g. Colab GPU behind a tunnel); set OLLAMA_BASE_URL in .env
+  ollama:         # optional: self-hosted Ollama (used for the archived judge); set OLLAMA_BASE_URL in .env
     type: openai_compatible
     base_url_env: OLLAMA_BASE_URL
     api_key_env: OLLAMA_API_KEY   # Ollama ignores it, but the client needs a value: use "ollama"
@@ -32,14 +32,13 @@ providers:
 # The judge deliberately uses a different model than the finder, so it does not grade its own picks.
 stages:
   finder:
-    - {provider: freellm, model: gpt-oss-120b}
-    - {provider: freellm, model: command-a}
+    - {provider: groq, model: openai/gpt-oss-120b}
+    - {provider: gemini, model: gemini-3.5-flash}      # used only if the Groq call fails
   # ONE judge model for every clip, never the finder model, and no fallback: mixing judge models
-  # made scores incomparable (see report history). If it is unavailable, the run stops judging
+  # made scores incomparable (see docs/DEVELOPMENT.md). If it is unavailable, the run stops judging
   # and can be resumed; finished judgements are cached.
-  # No Ollama? Swap it from the CLI:  --judge-provider freellm --judge-model command-a
   judge:
-    - {provider: ollama, model: "qwen3.8:27b"}
+    - {provider: groq, model: qwen/qwen3.8-27b}
 
 judge_repeats: 2        # judge each clip this many times and average (also measures judge consistency)
 
