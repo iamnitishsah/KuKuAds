@@ -4,7 +4,8 @@ Turns beat IDs into timestamps and enforces the brief's rules:
   * 20-60 s total
   * the hook beat starts within the first 3 s
   * the clip ends on (or right after) the cliffhanger beat
-  * cuts never land in the middle of a spoken line, and snap to camera-shot edges
+  * cuts never land in the middle of a spoken line, and snap to camera-shot edges when there is room
+A clip that is too short or too long is repaired where possible before it is rejected.
 Every fix or rejection is recorded in promo.notes, so bad picks can be explained.
 """
 from __future__ import annotations
@@ -14,6 +15,7 @@ from .models import Beat, Episode, Promo, Segment
 SNAP_START_S = 1.0   # max seconds a start may move back to the beginning of the camera shot
 SNAP_END_S = 1.5     # max seconds an end may move forward to the end of the camera shot
 END_SLACK_S = 3.0    # the clip may run this long past the cliffhanger beat
+START_BACK_S = 2.0   # a start inside a spoken line moves back to the line's start if that is this close
 
 
 def is_strong(b: Beat) -> bool:
@@ -38,16 +40,49 @@ def promo_intensity(beats: list[Beat]) -> float:
     return round(min(1.0, avg / 2 + 0.1 * phys), 3)
 
 
-def _snap(ep: Episode, start: float, end: float) -> tuple[float, float]:
-    for b in ep.beats:   # never cut a spoken line in half
-        if b.type == "dialogue" and b.start < end < b.end:
-            end = b.end
+def _camera(ep: Episode, start: float, end: float, hook_start: float | None, window: float) -> tuple[float, float]:
+    """Snap to camera-shot edges. The start only snaps back while the hook stays inside the hook window."""
+    s, e = start, end
     for b in ep.beats:
-        if b.type == "camera" and b.start <= start < b.end and start - b.start <= SNAP_START_S:
-            start = b.start
-        if b.type == "camera" and b.start < end < b.end and b.end - end <= SNAP_END_S:
-            end = b.end
-    return round(max(start, 0.0), 2), round(min(end, ep.duration), 2)
+        if b.type != "camera":
+            continue
+        if b.start <= s < b.end and s - b.start <= SNAP_START_S and (hook_start is None or hook_start - b.start <= window):
+            s = b.start
+        if b.start < e < b.end and b.end - e <= SNAP_END_S:
+            e = b.end
+    return s, e
+
+
+def _protect(ep: Episode, start: float, end: float, hook_start: float | None, window: float) -> tuple[float, float]:
+    """Make both edges land between spoken lines (a line is never cut in half, at either end)."""
+    for _ in range(6):                      # overlapping lines can chain, so repeat until stable
+        moved = False
+        for b in ep.beats:
+            if b.type == "dialogue" and b.start < end < b.end:
+                end, moved = b.end, True
+        for b in ep.beats:
+            if b.type == "dialogue" and b.start < start < b.end:
+                if start - b.start <= START_BACK_S and (hook_start is None or hook_start - b.start <= window):
+                    start, moved = b.start, True          # keep the whole line
+                elif b.end <= (hook_start if hook_start is not None else end):
+                    start, moved = b.end, True            # skip the rest of the line
+        if not moved:
+            break
+    return start, end
+
+
+def _snap(ep: Episode, start: float, end: float, room: float | None = None, hook_start: float | None = None,
+          window: float = 3.0) -> tuple[float, float]:
+    """Edge fixes. Shot snapping is optional and dropped if it would push the clip past `room` seconds;
+    keeping spoken lines whole is not optional."""
+    for use_camera in (True, False):
+        s, e = _protect(ep, start, end, hook_start, window)
+        if use_camera:
+            s, e = _camera(ep, s, e, hook_start, window)
+            s, e = _protect(ep, s, e, hook_start, window)    # a shot edge can land inside a line: check again
+        if room is None or e - s <= room + 1e-6:
+            break
+    return round(max(s, 0.0), 2), round(min(e, ep.duration), 2)
 
 
 def _get(ep: Episode, beat_id) -> Beat | None:
@@ -119,30 +154,45 @@ def validate(raw: dict, ep: Episode, promo_id: str, cfg: dict, source: str = "ll
 
     def build(rs) -> list[Segment]:
         segs = []
-        for x, y in rs:
-            st, en = _snap(ep, x.start, max(y.end, x.end))
+        raw = [max(y.end, x.end) - x.start for x, y in rs]
+        hb = _get(ep, p.hook_beat)
+        for k, (x, y) in enumerate(rs):
+            room = max_s - (sum(raw) - raw[k])
+            st, en = _snap(ep, x.start, max(y.end, x.end), room=room,
+                           hook_start=hb.start if (k == 0 and hb) else None, window=hook_window)
             segs.append(Segment(ep.number, st, en, x.id, y.id))
         return segs
 
     p.segments = build(ranges)
 
-    # 4. Length: too long -> start at a later strong beat; too short -> start at an earlier strong beat
+    # 4. Length: repair before rejecting
     if p.duration > max_s:
         a, b = ranges[0]
-        other = p.duration - p.segments[0].duration
-        for nb in ep.beats[a.index + 1:b.index + 1]:
-            if nb.type != "camera" and is_strong(nb) and min_s <= (b.end - nb.start) + other <= max_s:
-                p.notes.append(f"too long ({p.duration:.1f}s): start moved to later hook {nb.id}")
-                ranges[0] = (nb, b)
+        before = p.duration
+        # prefer a later strong beat as the new hook; otherwise any later spoken or visible beat
+        for want_strong in (True, False):
+            for nb in ep.beats[a.index + 1:b.index + 1]:
+                if nb.type == "camera" or (want_strong and not is_strong(nb)):
+                    continue
+                trial = [(nb, b)] + ranges[1:]
+                old = (p.segments, p.hook_beat, p.hook)
                 p.hook_beat, p.hook = nb.id, nb.text[:120]
-                p.segments = build(ranges)
-                break
+                p.segments = build(trial)
+                if min_s <= p.duration <= max_s:
+                    p.notes.append(f"too long ({before:.1f}s): start moved to {'later hook' if want_strong else 'a later beat (weaker hook)'} {nb.id}")
+                    ranges = trial
+                    break
+                p.segments, p.hook_beat, p.hook = old
+            else:
+                continue
+            break
         if p.duration > max_s:
             return reject(f"too long ({p.duration:.1f}s > {max_s}s)")
+    before_short = p.duration
     if p.duration < min_s:
         a, b = ranges[0]
         other = p.duration - p.segments[0].duration
-        for nb in reversed(ep.beats[:a.index]):
+        for nb in reversed(ep.beats[:a.index]):              # 1) start earlier, at a strong beat that becomes the hook
             need = (b.end - nb.start) + other
             if need > max_s:
                 break
@@ -152,8 +202,45 @@ def validate(raw: dict, ep: Episode, promo_id: str, cfg: dict, source: str = "ll
                 p.hook_beat, p.hook = nb.id, nb.text[:120]
                 p.segments = build(ranges)
                 break
+        if p.duration < min_s:                                # 2) keep the hook, run a little past the cliffhanger beat
+            a, b = ranges[-1]
+            for nb in ep.beats[b.index + 1:]:
+                if nb.type == "camera":
+                    continue
+                trial = ranges[:-1] + [(a, nb)]
+                segs = build(trial)
+                dur = round(sum(s.duration for s in segs), 2)
+                if dur > max_s:
+                    break
+                if dur >= min_s:
+                    p.notes.append(f"too short ({p.duration:.1f}s): end extended past the cliffhanger to {nb.id}")
+                    ranges, p.segments = trial, segs
+                    p.cliffhanger_beat, p.cliffhanger = nb.id, nb.text[:120]
+                    break
+        if p.duration < min_s:                                # 3) last resort: start earlier on any beat (weaker hook)
+            a, b = ranges[0]
+            other = p.duration - p.segments[0].duration
+            for nb in reversed(ep.beats[:a.index]):
+                if (b.end - nb.start) + other > max_s:
+                    break
+                if nb.type == "camera":
+                    continue
+                trial = [(nb, b)] + ranges[1:]
+                old_state = (p.segments, p.hook_beat, p.hook)
+                p.hook_beat, p.hook = nb.id, nb.text[:120]
+                p.segments = build(trial)
+                if min_s <= p.duration <= max_s:
+                    p.notes.append(f"too short ({before_short:.1f}s): start moved back to {nb.id} (weaker hook)")
+                    ranges = trial
+                    break
+                p.segments, p.hook_beat, p.hook = old_state
         if p.duration < min_s:
             return reject(f"too short ({p.duration:.1f}s < {min_s}s)")
+
+    # 5. Final check: the hook must open the clip, whatever the edge fixes did
+    hb = _get(ep, p.hook_beat)
+    if hb and hb.start - p.segments[0].start > hook_window + 1e-6:
+        return reject(f"hook is {hb.start - p.segments[0].start:.1f}s into the clip (> {hook_window}s)")
 
     p.intensity = promo_intensity(clip_beats(ep, p))
     p.status = "valid"
