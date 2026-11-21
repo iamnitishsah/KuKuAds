@@ -4,8 +4,8 @@
 | Tool | Used for |
 |---|---|
 | Claude (Claude Code) | Research on approaches/papers, architecture discussion, writing the code and tests, auditing results |
-| FreeLLM router (local) → `gpt-oss-120b`, `command-a` | The **finder** (picks promo beats) |
-| Self-hosted Ollama `qwen3.8:27b` | The **judge** (scores clips as a cold viewer) |
+| `gpt-oss-120b` (archived run: local router; now Groq) | The **finder** (picks promo beats) |
+| `qwen3.8:27b` (archived run: self-hosted Ollama; now Groq) | The **judge** (scores clips as a cold viewer) |
 | DeepSeek V4.1 Flash | Blinded second rater (LLM-2) on 24 clips; see `eval/reports/LLM2_EVALUATION.md` |
 
 The model in each role is configured, not hard-coded (`configs/config.yaml`).

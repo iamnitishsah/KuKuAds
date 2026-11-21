@@ -3,6 +3,14 @@
 What the runs showed: what we would post first, how that was measured, and where it fails. Open fixes are in
 [ROADMAP.md](ROADMAP.md); the long evidence reports are in [`eval/reports/`](../eval/reports/).
 
+## In short
+
+- It finds usable promos: 78 valid across 49 of 50 episodes, all within the length and hook rules.
+- Its real value is **where to cut**. It beat a rules-only baseline on the cliffhanger in 20 of 49 episodes (lost 7).
+  On hook and clarity it is not clearly better, and the overall win (31 of 49) is not statistically proven.
+- The ranking is a shortlist, not a verdict: changing the finder model changes 7 of the top 15. E31-P2 is #1 every time.
+- Nothing has been checked against a human yet, so "good" means "an AI judge agrees".
+
 ## What we'd post first
 
 **Archived run** (`gpt-oss-120b` finder + `qwen3.8:27b` judge): **E31-P2, E43-P1, E32-P1, E01-P1, E13-P1**
@@ -126,7 +134,7 @@ all numbers: [`eval/reports/LLM2_EVALUATION.md`](../eval/reports/LLM2_EVALUATION
 | Self-grading | The archived run has **0/78** LLM promos graded by the finder model. The all-qwen run has **83/83** — the same model found and judged every promo, so its scores may be generous and are not independent. | known limit |
 | Brand safety | Ep 31/32 are real and high-ranked: E31-P2 is **#1**, E32-P1 is **#3**, both with a red-hot iron inches from an eye (threat, no contact). Ep 39 is **#47** and the guard is knocked **unconscious**, not killed. Ep 50 is **#63**: the intimate scene is real, but the promo is near the bottom. | open, no check yet |
 | Low-clarity picks | E49-P1 (2.5), then E06-P2, E17-P1, E19-P3, E07-P2, E20-P1, E09-P1, E14-P1, E33-P3, E37-P3 (all 3.0). Every one is low-ranked (ranks 56–78); none is a top-15 pick. | known limit |
-| Useless field | `context_needed` came back `"low"` for **84/84** proposals. Zero variance, no signal; `rank.py` never reads it. | ignored in ranking |
+| Useless field | `context_needed` came back `"low"` for **84/84** proposals. Zero variance, no signal; `rank.py` never reads it. | field removed from the prompt |
 | Late-episode skew | **Not supported** by the delivered top 15: mean episode 23.2 vs 23.97 for all promos; only the top 3 are late. Removing the 0.05 early-episode bonus changes no top-15 membership, only the order. | not supported |
 
 ## What it does not do

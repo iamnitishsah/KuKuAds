@@ -7,12 +7,17 @@
 - **Assignment brief:** `submission/Kuku-AI Generalist Assignment.pdf` (Problem 1: Find the Promos).
 
 ## Models used
-| Role | Model | How it was served |
+Current defaults (`configs/config.yaml`; keys `GROQ_API_KEY` and `GEMINI_API_KEY` in `.env`):
+
+| Role | Model | Served by |
 |---|---|---|
-| Finder | `gpt-oss-120b` (fallback `command-a`) | local OpenAI-compatible router (`freellm`) |
-| Judge | `qwen3.8:27b` | self-hosted Ollama |
-| Finder in the all-qwen run | `qwen3.8:27b` | self-hosted Ollama |
-| Blinded second rater (LLM-2) | DeepSeek V4.1 Flash | see `eval/reports/LLM2_EVALUATION.md` |
+| Finder | `openai/gpt-oss-120b` | Groq |
+| Finder fallback (only if the Groq call fails) | `gemini-3.5-flash` | Gemini |
+| Judge (never the finder's model, no fallback) | `qwen/qwen3.8-27b` | Groq |
+
+The archived run (`outputs/full-run`) used the same two models served differently: finder `gpt-oss-120b` (fallback
+`command-a`) through a local OpenAI-compatible router, judge `qwen3.8:27b` on self-hosted Ollama. The all-qwen run used
+`qwen3.8:27b` for both stages. The blinded second rater (LLM-2) was DeepSeek V4.1 Flash; see `eval/reports/LLM2_EVALUATION.md`.
 
 ## References
 - ByteDance / USTC, **HIVE**, arXiv 2507.02790: cuts short dramas into ads from video. KuKuAds starts at its highlight

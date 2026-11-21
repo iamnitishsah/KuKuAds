@@ -9,22 +9,23 @@ CLI and HTTP interface see [API.md](API.md).
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env          # only the keys for the providers you use
-python -m pytest -q           # 15 tests; no network or API key needed
+python run.py --selftest      # offline pipeline check
+python -m pytest -q           # 18 tests; no network or API key needed
 ```
 
 `run.py` adds `src/` to the path, so nothing needs installing. `pyproject.toml` also sets `pythonpath = ["src"]` for pytest.
-`make test`, `make run SCRIPTS=...` and `make serve` wrap the same commands.
+`make test`, `make selftest`, `make run SCRIPTS=...` and `make app` wrap the same commands.
 
 ## Layout
 
 | Path | What |
 |---|---|
-| `src/promofinder/pipeline/` | `parse`, `find`, `prompts`, `validate`, `judge`, `rank`, `baseline`, `report`, `runner`, `models` |
-| `src/promofinder/llm/` | `LLMClient` (pin, fallback, cache, log) and the two provider adapters |
-| `src/promofinder/api/` | FastAPI app and static UI |
+| `src/kukuads/pipeline/` | `parse`, `find`, `prompts`, `validate`, `judge`, `rank`, `baseline`, `report`, `runner`, `models` |
+| `src/kukuads/llm/` | `LLMClient` (pin, fallback, cache, log) and the two provider adapters |
+| `src/kukuads/ui.py`, `health.py`, `selftest.py` | Streamlit app, backend check, offline self-test |
 | `configs/config.yaml` | providers, pinned models, promo rules, ranking weights |
-| `tests/` | parser, validator, ranker, LLM client |
-| `eval/` | one-off evaluation scripts and the long evidence reports |
+| `tests/` | parser, validator, ranker, LLM client, self-test, backend check |
+| `eval/reports/` | the long evidence reports |
 
 ## Common changes
 
@@ -32,7 +33,7 @@ python -m pytest -q           # 15 tests; no network or API key needed
 - **Add a provider:** add an entry under `providers`; `openai_compatible` and `anthropic` are the only adapter types.
 - **Tune a prompt:** all prompts are in `pipeline/prompts.py`. Re-run with `--no-cache`, or the cache returns old replies.
 - **Change promo rules or ranking weights:** `promo` and `ranking` in `configs/config.yaml`; no code change needed.
-- **New show:** `python run.py --scripts <folder>`; the parser is forgiving about case, spacing and missing headers.
+- **New show:** `python run.py --scripts <folder>` (or upload in the app); the parser is forgiving about case, spacing and missing headers.
 
 ## Rules that matter
 
@@ -48,7 +49,7 @@ python -m pytest -q
 python -m pytest tests/test_validate.py -q
 ```
 
-Covered: parser, validator, ranker, LLM client. Not covered: `judge`, `baseline`, `find`, `report`, `runner`, `api`.
+Covered: parser, validator, ranker, LLM client, self-test, backend check. Not covered directly: `find`, `baseline`, `report`, `runner`, `ui` (the self-test exercises `judge`).
 
 ## Mistakes log: what went wrong and how it was solved
 

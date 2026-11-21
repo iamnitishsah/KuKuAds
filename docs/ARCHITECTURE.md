@@ -20,14 +20,14 @@ max one promo per episode in the top 15 (diversity).
 
 ## Components
 
-| Component | Path (`src/promofinder/`) | Role |
+| Component | Path (`src/kukuads/`) | Role |
 |---|---|---|
 | Pipeline stages | `pipeline/` | parse, find, validate, judge, rank, baseline, report |
 | Orchestrator | `pipeline/runner.py` | runs the stages in order and writes every output file; used by the CLI and the API |
 | LLM client | `llm/client.py` | pinned model per stage, fallback list, disk cache, call log, rate-limit wait |
 | Provider adapters | `llm/providers.py` | `openai_compatible` and `anthropic` |
-| CLI | `run.py` | see [API.md](API.md) |
-| Web app | `api/` | FastAPI plus a static page over the same orchestrator |
+| CLI | `run.py` | see [API.md](API.md); `app.py` launches the app |
+| App | `ui.py`, `health.py`, `selftest.py` | Streamlit app (status, run, results) over the same orchestrator; backend check; offline self-test |
 | Config | `configs/config.yaml` | models, rules, weights |
 
 ## Data flow

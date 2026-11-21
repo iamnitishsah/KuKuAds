@@ -1,13 +1,13 @@
-# CLI and HTTP API
+# Interfaces
 
-Both interfaces run the same function, `pipeline.runner.run_pipeline`, so they behave identically.
+The command line and the Streamlit app run the same function, `pipeline.runner.run_pipeline`, so they behave identically.
 
 ## CLI: `run.py`
 
 ```bash
 python run.py --scripts "data/raw/<show folder>"                                   # full show
 python run.py --scripts DIR --episodes 1-5,12                                      # subset
-python run.py --scripts DIR --provider anthropic --model claude-sonnet-5-5         # one model for every stage
+python run.py --scripts DIR --provider anthropic --model claude-sonnet-5-5         # one model for every stage (needs ANTHROPIC_API_KEY)
 python run.py --scripts DIR --judge-provider openai --judge-model <id>             # swap only the judge
 python run.py --scripts DIR --out outputs/another-show                             # choose the output folder
 ```
@@ -20,6 +20,7 @@ python run.py --scripts DIR --out outputs/another-show                          
 | `--config FILE` | default `configs/config.yaml` |
 | `--provider P --model M` | pin all stages to one model (must be given together) |
 | `--judge-provider P --judge-model M` | pin only the judge |
+| `--selftest` | offline check, no LLM or key; `--scripts` not needed |
 | `--no-judge` | skip the judge (no ranking scores) |
 | `--no-baseline` | skip the rules-only baseline |
 | `--no-cache` | ignore cached LLM replies |
@@ -27,34 +28,19 @@ python run.py --scripts DIR --out outputs/another-show                          
 Providers defined in `configs/config.yaml`: `freellm`, `openai`, `gemini`, `groq`, `anthropic`, `ollama`. Keys and URLs
 come from `.env` (see `.env.example`).
 
-## HTTP API
+## Streamlit app
 
 ```bash
-PYTHONPATH=src uvicorn promofinder.api.main:app --port 8000      # or: make serve
+streamlit run app.py        # or: make app
 ```
 
-Jobs are kept in memory and there is no authentication: for local use.
-
-| Method and path | Purpose |
+| Tab | What it does |
 |---|---|
-| `GET /` | web UI |
-| `GET /api/health` | liveness |
-| `GET /api/config` | pinned models per stage, provider types, promo rules (never keys) |
-| `POST /api/jobs` | start a run (form fields below); returns `{run, status}` |
-| `GET /api/jobs/{run}` | status, stage, progress counts, log tail |
-| `GET /api/runs` | finished runs under `outputs/` |
-| `GET /api/runs/{run}/promos?top_only=true` | ranked promos (JSON) |
-| `GET /api/runs/{run}/report` | `report.md` as text |
-| `GET /api/runs/{run}/files/{name}` | download any output file |
+| **Status** | **Run self-test**: offline check of parse, validate, judge and rank on a made-up episode with a stub model (no key, no data). **Backends** table: for every model in `configs/config.yaml`, is its key set and does its endpoint answer. If nothing is reachable it says so. |
+| **Run** | Upload `.txt` screenplays or point at a folder; optional episode filter; run the judge and/or baseline; use the config models or one model for every stage; progress and log while it runs. |
+| **Results** | Pick any run in `outputs/`: top list, per-promo detail (segments, hook, cliffhanger, why, what the cold viewer saw, automatic fixes), the full report, and downloads (CSV, JSON, report). |
 
-`POST /api/jobs` form fields: `files` (one or more `.txt`) **or** `scripts_dir`; optional `episodes`, `provider`,
-`model` (together), `judge_provider`, `judge_model`, `judge` (bool, default true).
-
-```bash
-curl -F "files=@episode-001.txt" -F "episodes=1" http://127.0.0.1:8000/api/jobs
-curl http://127.0.0.1:8000/api/jobs/<run>
-curl "http://127.0.0.1:8000/api/runs/<run>/promos?top_only=true"
-```
+The same self-test is available without the app: `python run.py --selftest` (exit code 0 means it passed).
 
 ## Output schema (`promos_ranked.json`)
 

@@ -9,8 +9,6 @@ One folder per run; each holds `report.md`, `promos_ranked.csv/json`, `candidate
 | `full-run-qwen-both/` | All-qwen run (finder and judge are the same model; a coverage check, not independent quality) |
 | `full-run-v1-judge-fallback/` | Evidence: router silently fell back, finder graded its own clips |
 | `full-run-v2-quota-hit/`, `full-run-v3-mixed-judges/` | Evidence: judge quota hit, then 20 different judges (scores not comparable) |
-| `full-run-v3-interrupted/` | Interrupted run (partial) |
-| `dev/`, `qwen-both-test/` | Small development and smoke runs |
-| `eval-llm2/` | Results of the blinded second-LLM check (scripts are in `eval/llm2/`) |
+| `eval-llm2/` | Data from the blinded second-LLM check (write-up: `eval/reports/LLM2_EVALUATION.md`) |
 
-New CLI runs default to `outputs/run-<timestamp>/`; API runs go to `outputs/api-<timestamp>/`.
+New CLI runs default to `outputs/run-<timestamp>/`; app runs go to `outputs/run-<timestamp>/` too.
