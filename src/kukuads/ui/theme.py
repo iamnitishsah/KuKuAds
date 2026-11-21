@@ -7,7 +7,7 @@ import re
 import streamlit as st
 
 CSS = """<style>
-.block-container{padding-top:1.6rem;max-width:1250px}
+.block-container{padding-top:4.5rem;max-width:1250px}
 .brand{display:flex;align-items:baseline;gap:.6rem}
 .brand b{font-size:1.9rem;letter-spacing:-.02em}.brand b span{color:#7C3AED}
 .brand i{opacity:.65;font-style:normal;font-size:.95rem}
