@@ -6,6 +6,7 @@
 | Claude (Claude Code) | Research on approaches/papers, architecture discussion, writing the code and tests, auditing results |
 | FreeLLM router (local) → `gpt-oss-120b`, `command-a` | The **finder** (picks promo beats) |
 | Self-hosted Ollama `qwen3.8:27b` | The **judge** (scores clips as a cold viewer) |
+| DeepSeek V4.1 Flash | Blinded second rater (LLM-2) on 24 clips; see `eval/reports/LLM2_EVALUATION.md` |
 
 The model in each role is configured, not hard-coded (`configs/config.yaml`).
 
@@ -20,7 +21,7 @@ The model in each role is configured, not hard-coded (`configs/config.yaml`).
 4. **The finder proposed clips that started before the hook** (start moved to the hook beat in 4 cases) and clips that
    were too short or too long. Code, not the model, enforces the rules, because the model's own timing claims are not
    trustworthy.
-5. **The router quietly changed the model.** See `DEV_LOG.md` #1: the finder ended up grading its own clips.
+5. **The router quietly changed the model.** See `DEVELOPMENT.md` #1: the finder ended up grading its own clips.
 
 ## How I used AI
 Decisions (pipeline shape, pinned models, one independent judge, what counts as proof) were made in conversation and

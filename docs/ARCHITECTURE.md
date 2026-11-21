@@ -18,9 +18,34 @@ timestamps and enforces the rules (code) → a separate "cold viewer" LLM scores
 Ranking: hook 0.3, cliffhanger 0.3, clarity 0.3, intensity 0.1, +0.05 for episodes ≤ 5 (good entry points),
 max one promo per episode in the top 15 (diversity).
 
+## Components
+
+| Component | Path (`src/promofinder/`) | Role |
+|---|---|---|
+| Pipeline stages | `pipeline/` | parse, find, validate, judge, rank, baseline, report |
+| Orchestrator | `pipeline/runner.py` | runs the stages in order and writes every output file; used by the CLI and the API |
+| LLM client | `llm/client.py` | pinned model per stage, fallback list, disk cache, call log, rate-limit wait |
+| Provider adapters | `llm/providers.py` | `openai_compatible` and `anthropic` |
+| CLI | `run.py` | see [API.md](API.md) |
+| Web app | `api/` | FastAPI plus a static page over the same orchestrator |
+| Config | `configs/config.yaml` | models, rules, weights |
+
+## Data flow
+
+```
+data/raw/*.txt ─ parse ─► Episode[Beat] ─ find (LLM) ─► beat-ID candidates ─ validate ─► Promo (timestamps, notes)
+                                                                                   │
+                                          baseline (rules) ─────────────────────────┤
+                                                                                   ▼
+                                                         judge (LLM, clip transcript only) ─ rank ─► report + CSV/JSON
+```
+
+Related docs: [DATASET.md](DATASET.md) (input format and signals), [API.md](API.md) (interfaces and
+output schema), [DEVELOPMENT.md](DEVELOPMENT.md), [findings.md](findings.md).
+
 ## Where a human stays in the loop
 The tool outputs a ranked list with reasons and flags; an editor approves what gets posted. Nothing is auto-published.
-Planned: a labelled gold set (see `EVALUATION.md`) to check the judge against human taste.
+Planned: a labelled gold set (see [findings.md](findings.md)) to check the judge against human taste.
 
 ## Swapping the model (the interviewer will ask)
 All LLM calls go through `llm/client.py` (`LLMClient`). Two adapters in `llm/providers.py`:
@@ -42,4 +67,4 @@ really answered, tokens, latency), and wait-and-retry on rate limits.
 
 ## Known limits
 Text only (no video/audio); depends on the screenplay's timestamps being accurate; the judge is an LLM and lenient
-(see `EVALUATION.md`).
+(see [findings.md](findings.md)).
