@@ -10,7 +10,7 @@ python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env          # only the keys for the providers you use
 python run.py --selftest      # offline pipeline check
-python -m pytest -q           # 18 tests; no network or API key needed
+python -m pytest -q           # 22 tests; no network or API key needed
 ```
 
 `run.py` adds `src/` to the path, so nothing needs installing. `pyproject.toml` also sets `pythonpath = ["src"]` for pytest.
@@ -22,7 +22,8 @@ python -m pytest -q           # 18 tests; no network or API key needed
 |---|---|
 | `src/kukuads/pipeline/` | `parse`, `find`, `prompts`, `validate`, `judge`, `rank`, `baseline`, `report`, `runner`, `models` |
 | `src/kukuads/llm/` | `LLMClient` (pin, fallback, cache, log) and the two provider adapters |
-| `src/kukuads/ui.py`, `health.py`, `selftest.py` | Streamlit app, backend check, offline self-test |
+| `src/kukuads/ui/` | Streamlit app: `state.py` (settings, runs), `settings.py` (dialog), `components.py` (promo card, side panel), `pages/` (one module per tab) |
+| `src/kukuads/health.py`, `selftest.py` | backend check and ping; offline self-test and demo-run writer |
 | `configs/config.yaml` | providers, pinned models, promo rules, ranking weights |
 | `tests/` | parser, validator, ranker, LLM client, self-test, backend check |
 | `eval/reports/` | the long evidence reports |
@@ -49,7 +50,7 @@ python -m pytest -q
 python -m pytest tests/test_validate.py -q
 ```
 
-Covered: parser, validator, ranker, LLM client, self-test, backend check. Not covered directly: `find`, `baseline`, `report`, `runner`, `ui` (the self-test exercises `judge`).
+Covered: parser, validator, ranker, LLM client, self-test, backend check, the app (tabs, demo run, session key). Not covered directly: `find`, `baseline`, `report`, `runner` (the self-test exercises `judge`; the app test exercises `report`).
 
 ## Mistakes log: what went wrong and how it was solved
 

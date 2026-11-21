@@ -34,11 +34,19 @@ come from `.env` (see `.env.example`).
 streamlit run app.py        # or: make app
 ```
 
-| Tab | What it does |
+Five tabs, plus a **Settings** dialog (button at the top right).
+
+| Tab | What it shows |
 |---|---|
-| **Status** | **Run self-test**: offline check of parse, validate, judge and rank on a made-up episode with a stub model (no key, no data). **Backends** table: for every model in `configs/config.yaml`, is its key set and does its endpoint answer. If nothing is reachable it says so. |
-| **Run** | Upload `.txt` screenplays or point at a folder; optional episode filter; run the judge and/or baseline; use the config models or one model for every stage; progress and log while it runs. |
-| **Results** | Pick any run in `outputs/`: top list, per-promo detail (segments, hook, cliffhanger, why, what the cold viewer saw, automatic fixes), the full report, and downloads (CSV, JSON, report). |
+| **Overview** | what it helps with, how, and what it will not do |
+| **Find promos** | choose screenplays (upload or folder) and episodes, **Run**, or **Try the demo**. Each promo is a card: segments, "checked by code" badges (length, hook timing recomputed from the data), hook / cliffhanger / why, judge scores, and **Why this pick?** (automatic fixes, what the cold viewer saw, judge model). Side panel: **Run** (funnel, errors, tokens), **Clip** (the exact transcript the judge saw), **Export** (CSV, JSON, report). **Open an earlier run** browses `outputs/`. |
+| **How it works** | the five steps (code vs AI), how invented timestamps are stopped, where data and keys live |
+| **Evaluation** | `docs/findings.md`: measured results and failures from the archived run |
+| **Status** | **Run self-test** (offline, stub model, no key or data) and a table of which configured models are reachable |
+
+**Settings:** use the models in `configs/config.yaml` or one model for every stage, a different judge model, your own API
+key (kept in this session's memory only, never written to disk), judge and baseline on/off, and **Test connection** (a
+real one-token call to the finder and the judge).
 
 The same self-test is available without the app: `python run.py --selftest` (exit code 0 means it passed).
 

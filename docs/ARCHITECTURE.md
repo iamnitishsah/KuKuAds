@@ -27,7 +27,7 @@ max one promo per episode in the top 15 (diversity).
 | LLM client | `llm/client.py` | pinned model per stage, fallback list, disk cache, call log, rate-limit wait |
 | Provider adapters | `llm/providers.py` | `openai_compatible` and `anthropic` |
 | CLI | `run.py` | see [API.md](API.md); `app.py` launches the app |
-| App | `ui.py`, `health.py`, `selftest.py` | Streamlit app (status, run, results) over the same orchestrator; backend check; offline self-test |
+| App | `ui/`, `health.py`, `selftest.py` | Streamlit app (five tabs and a settings dialog) over the same orchestrator; backend check; offline self-test and demo run |
 | Config | `configs/config.yaml` | models, rules, weights |
 
 ## Data flow

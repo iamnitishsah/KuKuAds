@@ -34,15 +34,16 @@ pip install -r requirements.txt
 cp .env.example .env            # defaults need GROQ_API_KEY and GEMINI_API_KEY
 
 python run.py --selftest        # offline check that the code works (no key, no data)
-python -m pytest -q             # 18 tests
-streamlit run app.py            # the app: Status, Run, Results tabs
+python -m pytest -q             # 22 tests
+streamlit run app.py            # the app (tabs: Overview, Find promos, How it works, Evaluation, Status)
 
 # command line, real run (screenplays go in data/raw/, which is gitignored)
 python run.py --scripts "data/raw/<show folder>" --episodes 1-3        # models from configs/config.yaml
 ```
 
-The app's **Status** tab answers "is it running?": a self-test button, and a table showing which configured models are
-reachable. Every flag and the output format: [docs/API.md](docs/API.md).
+The app's **Status** tab answers "is it running?": a self-test button and a table of which configured models are
+reachable; **Settings** has your own API key (memory only) and a real **Test connection**; **Try the demo** shows a
+full result with no key and no data. Every flag and the output format: [docs/API.md](docs/API.md).
 
 Each run writes `outputs/run-<time>/` with `report.md` (start here), `promos_ranked.csv/json`, `candidates.json`,
 `baseline.json` and `llm_calls.jsonl`.
@@ -67,7 +68,7 @@ Longer evidence (real prompts and outputs per stage; a second-LLM check): [eval/
 
 ```
 configs/config.yaml     models, rules, ranking weights
-src/kukuads/        pipeline/ (the 5 stages + report), llm/ (model client), ui.py (app), selftest.py, health.py
+src/kukuads/        pipeline/ (the 5 stages + report), llm/ (model client), ui/ (Streamlit app), selftest.py, health.py
 run.py  app.py          command line and Streamlit entry points
 data/raw/               screenplays (confidential, gitignored)
 outputs/                one folder per run (gitignored except its README)
